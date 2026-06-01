@@ -3,11 +3,29 @@ import { WASocket } from '@whiskeysockets/baileys';
 import { askGemini } from './ai.js';
 import config from './config.js';
 
+let activeSock: WASocket | null = null;
+
+/**
+ * Update the active socket instance used by the scheduler
+ * @param newSock The new active WASocket
+ */
+export function updateSchedulerSocket(newSock: WASocket) {
+    activeSock = newSock;
+    console.log('🔄 Socket referensi di Scheduler berhasil diperbarui.');
+}
+
 /**
  * Initialize automatic message scheduling and cron jobs
  * @param sock Active Baileys socket instance
  */
 export function initScheduler(sock: WASocket) {
+    // If scheduler has already been initialized, just update the socket reference
+    if (activeSock) {
+        updateSchedulerSocket(sock);
+        return;
+    }
+    
+    activeSock = sock;
     console.log('⏰ Menginisialisasi sistem penjadwalan otomatis (Scheduler)...');
 
     // ----------------------------------------------------------------------
@@ -16,6 +34,7 @@ export function initScheduler(sock: WASocket) {
     // ----------------------------------------------------------------------
     cron.schedule('0 7 * * *', async () => {
         try {
+            if (!activeSock) return;
             console.log('⏰ Scheduler: Mengirim pesan motivasi pagi otomatis...');
             
             // Tanya Gemini AI untuk membuat pesan motivasi segar
@@ -26,7 +45,7 @@ export function initScheduler(sock: WASocket) {
             
             // Kirim ke JID pemilik (owner) pertama
             const targetJid = config.owners[0];
-            await sock.sendMessage(targetJid, { text: messageText });
+            await activeSock.sendMessage(targetJid, { text: messageText });
             console.log(`✅ Pesan motivasi pagi berhasil dikirim ke: ${targetJid}`);
         } catch (error) {
             console.error('❌ Gagal menjalankan scheduler motivasi pagi:', error);
@@ -40,6 +59,7 @@ export function initScheduler(sock: WASocket) {
     // ----------------------------------------------------------------------
     cron.schedule('0 * * * *', async () => {
         try {
+            if (!activeSock) return;
             console.log('⏰ Scheduler: Menjalankan hourly system health-check...');
             const timeString = new Date().toLocaleTimeString('id-ID');
             
@@ -50,7 +70,7 @@ export function initScheduler(sock: WASocket) {
 
             // Kirim ke owner sebagai notifikasi uptime bot
             const targetJid = config.owners[0];
-            await sock.sendMessage(targetJid, { text: healthText });
+            await activeSock.sendMessage(targetJid, { text: healthText });
             console.log('✅ Health-check terkirim ke owner.');
         } catch (error) {
             console.error('❌ Gagal menjalankan scheduler health check:', error);
@@ -59,3 +79,4 @@ export function initScheduler(sock: WASocket) {
 
     console.log('✅ Seluruh tugas penjadwalan otomatis aktif di latar belakang!');
 }
+

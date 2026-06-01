@@ -79,11 +79,29 @@ async function fetchMedanSchedule(): Promise<PrayerSchedule | null> {
     return null;
 }
 
+let activeSock: WASocket | null = null;
+
+/**
+ * Update the active socket instance used by the prayer reminder
+ * @param newSock The new active WASocket
+ */
+export function updateSholatSocket(newSock: WASocket) {
+    activeSock = newSock;
+    console.log('🔄 Socket referensi di Sholat Reminder berhasil diperbarui.');
+}
+
 /**
  * Initialize the Prayer Times automatic reminder daemon
  * @param sock Active Baileys socket instance
  */
 export function initSholatReminder(sock: WASocket) {
+    // If sholat reminder has already been initialized, just update the socket reference
+    if (activeSock) {
+        updateSholatSocket(sock);
+        return;
+    }
+
+    activeSock = sock;
     console.log('🕌 Menginisialisasi modul pengingat jadwal sholat otomatis Kota Medan...');
 
     // Load initial schedule
@@ -94,6 +112,11 @@ export function initSholatReminder(sock: WASocket) {
         try {
             // Skip execution if disabled in config
             if (!config.sholatReminderEnabled) return;
+
+            // Skip if the socket is not fully connected/open yet to prevent "Connection Closed" crash on startup
+            if (!activeSock || !activeSock.ws || (activeSock.ws as any).readyState !== 1) {
+                return;
+            }
 
             // Ensure schedule is fresh for today
             const schedule = await fetchMedanSchedule();
@@ -128,7 +151,7 @@ export function initSholatReminder(sock: WASocket) {
                         `💬 _${aiMessage}_\n\n` +
                         `*“Sesungguhnya shalat itu adalah fardhu yang ditentukan waktunya atas orang-orang yang beriman.” (An-Nisa: 103)*`;
 
-                    await sock.sendMessage(targetJid, { text: alertText });
+                    await activeSock.sendMessage(targetJid, { text: alertText });
                     console.log(`✅ Pesan alarm sholat ${prayerName} berhasil dikirim ke: ${targetJid}`);
                 }
             }
