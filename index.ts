@@ -283,7 +283,7 @@ async function startBot() {
           console.error("❌ Gagal menghasilkan gambar QR di server:", err);
         });
       console.log(
-        "📢 Kode QR baru dihasilkan! Kunjungi http://localhost:3000 untuk melakukan pemindaian.",
+        `📢 Kode QR baru dihasilkan! Kunjungi http://localhost:${PORT} untuk melakukan pemindaian.`,
       );
     }
 
