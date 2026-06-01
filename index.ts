@@ -26,7 +26,17 @@ let isConnected = false;
 let currentQr: string | null = null;
 let currentQrImage: string | null = null;
 
-// API routes for Web UI
+// Memory store for user-defined scheduled messages
+interface ScheduledMessage {
+    id: string;
+    jid: string;
+    text: string;
+    time: string; // Readable datetime string
+    status: 'pending' | 'sent' | 'failed';
+}
+let scheduledMessages: ScheduledMessage[] = [];
+
+// API routes for Web UI status
 app.get('/api/status', (req, res) => {
     res.json({ 
         connected: isConnected,
@@ -35,6 +45,12 @@ app.get('/api/status', (req, res) => {
     });
 });
 
+// API route to get all user-scheduled messages
+app.get('/api/schedules', (req, res) => {
+    res.json(scheduledMessages);
+});
+
+// API route to send instant messages
 app.post('/api/send-message', async (req, res: any) => {
     const { jid, text } = req.body;
     if (!sockInstance || !isConnected) {
@@ -49,6 +65,57 @@ app.post('/api/send-message', async (req, res: any) => {
     } catch (e: any) {
         res.status(500).json({ success: false, error: e.message || 'Failed to send message.' });
     }
+});
+
+// API route to schedule a message at a future date/time
+app.post('/api/schedule-message', (req, res: any) => {
+    const { jid, text, datetime } = req.body;
+    if (!sockInstance || !isConnected) {
+        return res.status(500).json({ success: false, error: 'Bot is not connected to WhatsApp yet.' });
+    }
+    if (!jid || !text || !datetime) {
+        return res.status(400).json({ success: false, error: 'Destination, message text, and target date/time are required.' });
+    }
+
+    const targetTime = new Date(datetime).getTime();
+    const now = Date.now();
+    const delay = targetTime - now;
+
+    if (delay <= 0) {
+        return res.status(400).json({ success: false, error: 'Target time must be in the future!' });
+    }
+
+    const id = Math.random().toString(36).substring(2, 9);
+    const timeString = new Date(datetime).toLocaleString('id-ID');
+    
+    const newSchedule: ScheduledMessage = {
+        id,
+        jid,
+        text,
+        time: timeString,
+        status: 'pending'
+    };
+
+    scheduledMessages.push(newSchedule);
+
+    // Setup one-shot timer for the scheduled task
+    setTimeout(async () => {
+        const currentTask = scheduledMessages.find(s => s.id === id);
+        if (!currentTask || !sockInstance || !isConnected) {
+            if (currentTask) currentTask.status = 'failed';
+            return;
+        }
+        try {
+            console.log(`⏰ Scheduler Web: Mengirim pesan terjadwal otomatis (ID: ${id}) ke: ${jid}`);
+            await sockInstance.sendMessage(jid, { text });
+            currentTask.status = 'sent';
+        } catch (e) {
+            console.error(`❌ Gagal mengirim pesan terjadwal (ID: ${id}):`, e);
+            currentTask.status = 'failed';
+        }
+    }, delay);
+
+    res.json({ success: true, schedule: newSchedule });
 });
 
 const PORT = 3000;

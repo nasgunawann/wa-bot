@@ -1,4 +1,5 @@
 allowBuilds:
+  '@google/genai': true
   '@whiskeysockets/baileys': true
   baileys: true
   esbuild: true

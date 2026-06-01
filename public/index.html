@@ -18,6 +18,7 @@
             --secondary: #06b6d4;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
         }
@@ -45,7 +46,7 @@
 
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 950px;
             padding: 2rem;
         }
 
@@ -141,7 +142,7 @@
         /* Overlay Auth System */
         .overlay-container {
             position: relative;
-            min-height: 400px;
+            min-height: 440px;
         }
 
         .main-content {
@@ -268,7 +269,7 @@
             border-radius: 12px;
             padding: 4px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .tab-btn {
@@ -276,10 +277,10 @@
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
         }
 
@@ -307,7 +308,7 @@
 
         textarea.input-control {
             resize: none;
-            min-height: 120px;
+            min-height: 110px;
         }
 
         .btn-submit {
@@ -336,18 +337,18 @@
             transform: translateY(0);
         }
 
-        /* History Section */
-        .history-section {
+        /* History & Scheduler Section */
+        .side-section {
             background: rgba(0, 0, 0, 0.15);
             border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.03);
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            max-height: 420px;
+            max-height: 480px;
         }
 
-        .history-section h2 {
+        .side-section h2 {
             font-size: 1.1rem;
             margin-bottom: 1rem;
             font-weight: 600;
@@ -406,6 +407,34 @@
             color: var(--success);
         }
 
+        .log-type.scheduled {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+
+        .status-pill {
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 100px;
+            text-transform: uppercase;
+        }
+
+        .status-pill.pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+
+        .status-pill.sent {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .status-pill.failed {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
         .log-to {
             color: var(--text-muted);
         }
@@ -425,6 +454,17 @@
             margin: auto;
             font-size: 0.9rem;
         }
+
+        .automation-info {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -434,7 +474,7 @@
         <header>
             <div class="brand">
                 <h1>Antigravity Dashboard</h1>
-                <p>Kirim pesan WhatsApp otomatis via Baileys v7</p>
+                <p>Kirim pesan WhatsApp & Otomatisasi via Baileys v7</p>
             </div>
             <div class="status-badge disconnected" id="statusBadge">
                 <span class="status-dot"></span>
@@ -465,18 +505,16 @@
             <!-- Main Interactive Content (will be blurred when unauthorized) -->
             <div class="main-content blur-locked" id="mainContent">
                 <div class="form-section">
-                    <h2>Kirim Pesan Baru</h2>
-                    
-                    <div class="form-group">
-                        <label>Tipe Tujuan</label>
-                        <div class="selector-tabs">
-                            <button class="tab-btn active" id="tabDm" onclick="setChatType('dm')">Obrolan Pribadi (DM)</button>
-                            <button class="tab-btn" id="tabGroup" onclick="setChatType('group')">Grup Chat</button>
-                        </div>
+                    <div class="selector-tabs">
+                        <button class="tab-btn active" id="tabDm" onclick="setMode('dm')">Obrolan Pribadi (DM)</button>
+                        <button class="tab-btn" id="tabGroup" onclick="setMode('group')">Grup Chat</button>
+                        <button class="tab-btn" id="tabAuto" onclick="setMode('auto')">Otomatisasi (Scheduler)</button>
                     </div>
 
-                    <form id="messageForm" onsubmit="sendMessage(event)">
-                        <div class="form-group">
+                    <h2 id="modeTitle">Kirim Pesan Baru</h2>
+                    
+                    <form id="messageForm" onsubmit="handleFormSubmit(event)">
+                        <div class="form-group" id="recipientGroup">
                             <label id="targetLabel">Nomor WA Tujuan</label>
                             <input type="text" id="targetJid" class="input-control" placeholder="6281234567890" required>
                             <span id="hintText" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
@@ -484,21 +522,38 @@
                             </span>
                         </div>
 
+                        <!-- Date & Time Picker (only visible in Scheduler mode) -->
+                        <div class="form-group" id="datetimeGroup" style="display: none;">
+                            <label>Waktu Kirim Otomatis</label>
+                            <input type="datetime-local" id="scheduleDatetime" class="input-control">
+                            <span style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+                                Tentukan tanggal dan waktu kapan pesan ini harus dikirim secara otomatis.
+                            </span>
+                        </div>
+
                         <div class="form-group">
-                            <label>Isi Pesan</label>
+                            <label id="contentLabel">Isi Pesan</label>
                             <textarea id="messageContent" class="input-control" placeholder="Ketik pesan Anda di sini..." required></textarea>
                         </div>
 
                         <button type="submit" id="btnSubmit" class="btn-submit">
-                            <span>Kirim Pesan</span> 🚀
+                            <span id="btnText">Kirim Pesan</span> 🚀
                         </button>
                     </form>
                 </div>
 
-                <div class="history-section">
-                    <h2>Riwayat Terkirim</h2>
+                <div class="side-section">
+                    <h2 id="sideTitle">Riwayat Terkirim</h2>
                     <div class="log-container" id="logContainer">
-                        <div class="empty-state">Belum ada pesan terkirim dari web.</div>
+                        <div class="empty-state" id="emptyStateText">Belum ada pesan terkirim dari web.</div>
+                    </div>
+                    
+                    <!-- Automation Status widget under list -->
+                    <div class="automation-info" id="automationInfoWidget" style="display: none;">
+                        💡 <b>Tugas Latar Belakang Aktif:</b><br>
+                        • Daily Motivation (07:00 AM) — <i>Aktif</i><br>
+                        • Hourly System Health-Check — <i>Aktif</i><br>
+                        • Gemini Auto-Assistant DM — <i>Aktif</i>
                     </div>
                 </div>
             </div>
@@ -507,10 +562,11 @@
 </div>
 
 <script>
-    let activeType = 'dm';
+    let activeMode = 'dm';
     let isConnected = false;
+    let sentHistory = [];
 
-    // Fetch connection and QR status from Express API
+    // Fetch status and QR
     async function checkStatus() {
         try {
             const res = await fetch('/api/status');
@@ -533,24 +589,19 @@
             isConnected = data.connected;
 
             if (isConnected) {
-                // Update badge to success
                 badge.className = 'status-badge connected';
                 statusText.innerText = 'Connected';
                 
-                // Hide authorization blocker and remove blur
                 authOverlay.style.display = 'none';
                 mainContent.classList.remove('blur-locked');
             } else {
-                // Update badge to disconnected
                 badge.className = 'status-badge disconnected';
                 statusText.innerText = 'Disconnected';
                 
-                // Display authorization block and blur underlying content
                 authOverlay.style.display = 'flex';
                 mainContent.classList.add('blur-locked');
 
                 if (data.qrImage) {
-                    // Display the server-side pre-generated base64 image directly
                     authSpinner.style.display = 'none';
                     qrWrapper.style.display = 'flex';
                     
@@ -558,12 +609,10 @@
                     authSubtitle.innerText = 'Tautkan WhatsApp Anda dengan memindai kode di bawah:';
                     authList.style.display = 'block';
 
-                    // Simply set src of <img> tag!
                     if (qrImageElement.src !== data.qrImage) {
                         qrImageElement.src = data.qrImage;
                     }
                 } else {
-                    // Waiting for QR / loading state
                     qrWrapper.style.display = 'none';
                     authSpinner.style.display = 'block';
                     authTitle.innerText = 'Menghubungkan Sesi...';
@@ -572,99 +621,215 @@
                 }
             }
         } catch (e) {
-            console.error('Failed to communicate with Express API status endpoint', e);
+            console.error('Failed to communicate with API status', e);
         }
     }
 
-    function setChatType(type) {
-        activeType = type;
+    // Toggle modes
+    function setMode(mode) {
+        activeMode = mode;
+        
         const tabDm = document.getElementById('tabDm');
         const tabGroup = document.getElementById('tabGroup');
+        const tabAuto = document.getElementById('tabAuto');
+        
         const targetLabel = document.getElementById('targetLabel');
         const targetJid = document.getElementById('targetJid');
         const hintText = document.getElementById('hintText');
+        
+        const datetimeGroup = document.getElementById('datetimeGroup');
+        const btnText = document.getElementById('btnText');
+        const modeTitle = document.getElementById('modeTitle');
+        const sideTitle = document.getElementById('sideTitle');
+        const automationInfoWidget = document.getElementById('automationInfoWidget');
 
-        if (type === 'dm') {
+        // Remove active class from all
+        tabDm.classList.remove('active');
+        tabGroup.classList.remove('active');
+        tabAuto.classList.remove('active');
+
+        // Reset display configs
+        datetimeGroup.style.display = 'none';
+        automationInfoWidget.style.display = 'none';
+
+        if (mode === 'dm') {
             tabDm.classList.add('active');
-            tabGroup.classList.remove('active');
+            modeTitle.innerText = 'Kirim Pesan Baru';
+            sideTitle.innerText = 'Riwayat Terkirim';
             targetLabel.innerText = 'Nomor WA Tujuan';
             targetJid.placeholder = '6281234567890';
             hintText.innerText = 'Masukkan nomor lengkap menggunakan kode negara tanpa tanda "+" (contoh: 6281234567890).';
-        } else {
-            tabDm.classList.remove('active');
+            btnText.innerText = 'Kirim Pesan';
+            
+            renderSentHistory();
+        } else if (mode === 'group') {
             tabGroup.classList.add('active');
+            modeTitle.innerText = 'Kirim Pesan Baru';
+            sideTitle.innerText = 'Riwayat Terkirim';
             targetLabel.innerText = 'ID Grup (JID)';
             targetJid.placeholder = '120363293847291028@g.us';
             hintText.innerText = 'Masukkan ID grup WhatsApp lengkap dengan akhiran @g.us.';
+            btnText.innerText = 'Kirim Pesan';
+            
+            renderSentHistory();
+        } else if (mode === 'auto') {
+            tabAuto.classList.add('active');
+            modeTitle.innerText = 'Jadwalkan Pesan Otomatis';
+            sideTitle.innerText = 'Tugas Terjadwal Aktif';
+            targetLabel.innerText = 'JID / Nomor WA Tujuan';
+            targetJid.placeholder = '6281234567890 atau ID Grup';
+            hintText.innerText = 'Tujuan pesan terjadwal (Nomor WA pribadi atau ID grup @g.us).';
+            
+            datetimeGroup.style.display = 'block';
+            automationInfoWidget.style.display = 'block';
+            btnText.innerText = 'Jadwalkan Pesan';
+            
+            fetchAndRenderScheduledTasks();
         }
     }
 
-    async function sendMessage(e) {
+    async function handleFormSubmit(e) {
         e.preventDefault();
         if (!isConnected) return;
 
         const targetJidInput = document.getElementById('targetJid');
         const messageContentInput = document.getElementById('messageContent');
+        const scheduleDatetimeInput = document.getElementById('scheduleDatetime');
         const btn = document.getElementById('btnSubmit');
 
         let jid = targetJidInput.value.trim();
         const text = messageContentInput.value;
 
-        // Auto append domain helper for DM
-        if (activeType === 'dm' && !jid.includes('@')) {
+        // Auto append domain for DM
+        if (!jid.includes('@')) {
             jid = jid + '@s.whatsapp.net';
         }
 
         btn.setAttribute('disabled', 'true');
-        btn.innerText = 'Mengirim...';
 
-        try {
-            const response = await fetch('/api/send-message', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ jid, text })
-            });
-
-            const result = await response.json();
-            btn.removeAttribute('disabled');
-            btn.innerHTML = '<span>Kirim Pesan</span> 🚀';
-
-            if (result.success) {
-                // Add to history log
-                addToLog(activeType, jid, text);
-                messageContentInput.value = '';
-            } else {
-                alert('Gagal mengirim pesan: ' + result.error);
+        if (activeMode === 'auto') {
+            // Scheduler mode
+            const datetime = scheduleDatetimeInput.value;
+            if (!datetime) {
+                alert('Tentukan waktu kirim terlebih dahulu!');
+                btn.removeAttribute('disabled');
+                return;
             }
-        } catch (error) {
-            btn.removeAttribute('disabled');
-            btn.innerHTML = '<span>Kirim Pesan</span> 🚀';
-            alert('Error saat mengirim: ' + error.message);
+
+            try {
+                const response = await fetch('/api/schedule-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jid, text, datetime })
+                });
+
+                const result = await response.json();
+                btn.removeAttribute('disabled');
+
+                if (result.success) {
+                    messageContentInput.value = '';
+                    scheduleDatetimeInput.value = '';
+                    fetchAndRenderScheduledTasks();
+                    alert('Pesan berhasil dijadwalkan secara otomatis!');
+                } else {
+                    alert('Gagal menjadwalkan: ' + result.error);
+                }
+            } catch (error) {
+                btn.removeAttribute('disabled');
+                alert('Error penjadwalan: ' + error.message);
+            }
+        } else {
+            // Instant Send Mode (DM or Group)
+            try {
+                const response = await fetch('/api/send-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jid, text })
+                });
+
+                const result = await response.json();
+                btn.removeAttribute('disabled');
+
+                if (result.success) {
+                    addToSentHistory(activeMode, jid, text);
+                    messageContentInput.value = '';
+                } else {
+                    alert('Gagal mengirim pesan: ' + result.error);
+                }
+            } catch (error) {
+                btn.removeAttribute('disabled');
+                alert('Error pengiriman: ' + error.message);
+            }
         }
     }
 
-    function addToLog(type, to, message) {
-        const container = document.getElementById('logContainer');
-        const emptyState = container.querySelector('.empty-state');
-        if (emptyState) emptyState.remove();
-
+    function addToSentHistory(type, to, message) {
         const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        
-        const logItem = document.createElement('div');
-        logItem.className = 'log-item';
-        
-        const displayTo = to.split('@')[0];
+        sentHistory.unshift({ type, to, message, time: timeStr });
+        renderSentHistory();
+    }
 
-        logItem.innerHTML = `
-            <div class="log-header">
-                <span class="log-type ${type}">${type === 'dm' ? 'DM' : 'GROUP'}</span>
-                <span class="log-to">Ke: <b>${displayTo}</b></span>
-                <span class="log-time">${timeStr}</span>
-            </div>
-            <div class="log-body">${escapeHtml(message)}</div>
-        `;
+    function renderSentHistory() {
+        const container = document.getElementById('logContainer');
+        container.innerHTML = '';
 
-        container.insertBefore(logItem, container.firstChild);
+        if (sentHistory.length === 0) {
+            container.innerHTML = '<div class="empty-state">Belum ada pesan terkirim dari web.</div>';
+            return;
+        }
+
+        sentHistory.forEach(item => {
+            const logItem = document.createElement('div');
+            logItem.className = 'log-item';
+            const displayTo = item.to.split('@')[0];
+
+            logItem.innerHTML = `
+                <div class="log-header">
+                    <span class="log-type ${item.type}">${item.type === 'dm' ? 'DM' : 'GROUP'}</span>
+                    <span class="log-to">Ke: <b>${displayTo}</b></span>
+                    <span class="log-time">${item.time}</span>
+                </div>
+                <div class="log-body">${escapeHtml(item.message)}</div>
+            `;
+            container.appendChild(logItem);
+        });
+    }
+
+    async function fetchAndRenderScheduledTasks() {
+        if (activeMode !== 'auto') return;
+        const container = document.getElementById('logContainer');
+        container.innerHTML = '<div class="empty-state">Memuat data penjadwalan...</div>';
+
+        try {
+            const response = await fetch('/api/schedules');
+            const data = await response.json();
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                container.innerHTML = '<div class="empty-state">Belum ada tugas terjadwal kustom yang dibuat.</div>';
+                return;
+            }
+
+            // Render scheduled items
+            data.reverse().forEach(task => {
+                const logItem = document.createElement('div');
+                logItem.className = 'log-item';
+                const displayTo = task.jid.split('@')[0];
+
+                logItem.innerHTML = `
+                    <div class="log-header">
+                        <span class="log-type scheduled">SCHEDULED</span>
+                        <span class="log-to">Ke: <b>${displayTo}</b></span>
+                        <span class="status-pill ${task.status}">${task.status}</span>
+                    </div>
+                    <div class="log-body" style="margin-bottom: 6px;">${escapeHtml(task.text)}</div>
+                    <div class="log-time" style="font-size: 0.75rem; text-align: right;">Rencana Kirim: <b>${task.time}</b></div>
+                `;
+                container.appendChild(logItem);
+            });
+        } catch (error) {
+            container.innerHTML = '<div class="empty-state" style="color: var(--danger);">Gagal memuat tugas terjadwal.</div>';
+        }
     }
 
     function escapeHtml(text) {
@@ -676,8 +841,14 @@
             .replace(/'/g, "&#039;");
     }
 
-    // Auto poll status every 2 seconds for active reactive feel
-    setInterval(checkStatus, 2000);
+    // Auto poll status
+    setInterval(() => {
+        checkStatus();
+        if (activeMode === 'auto') {
+            fetchAndRenderScheduledTasks();
+        }
+    }, 2500);
+
     checkStatus();
 </script>
 </body>
