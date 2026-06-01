@@ -1,5 +1,6 @@
 import { WASocket, proto, normalizeMessageContent } from '@whiskeysockets/baileys';
 import config from './config.js';
+import { askGemini } from './ai.js';
 
 /**
  * Extract text from WhatsApp message info safely
@@ -67,6 +68,18 @@ export async function handleMessage(sock: WASocket, m: { messages: proto.IWebMes
                 
                 // Process Commands
                 switch (command) {
+                    case 'ai': {
+                        if (!q) {
+                            await sock.sendMessage(remoteJid, { text: 'Silakan ketik pertanyaan Anda! Contoh: `/ai kenapa awan berwarna putih?`' }, { quoted: msg });
+                            break;
+                        }
+                        
+                        await sock.sendPresenceUpdate('composing', remoteJid);
+                        const aiReply = await askGemini(q);
+                        await sock.sendMessage(remoteJid, { text: aiReply }, { quoted: msg });
+                        break;
+                    }
+                    
                     case 'ping': {
                         const start = Date.now();
                         await sock.sendMessage(remoteJid, { text: 'Calculating ping...' }, { quoted: msg });
@@ -80,6 +93,7 @@ export async function handleMessage(sock: WASocket, m: { messages: proto.IWebMes
                         const menuText = `🤖 *${config.botName}* 🤖\n\n` +
                             `Berikut adalah daftar perintah yang tersedia:\n\n` +
                             `*Umum:*\n` +
+                            `• \`${config.prefix}ai <pertanyaan>\` - Bertanya cerdas ke Gemini AI. 🧠\n` +
                             `• \`${config.prefix}ping\` - Cek kecepatan respon bot.\n` +
                             `• \`${config.prefix}help\` - Menampilkan menu bantuan.\n` +
                             `• \`${config.prefix}owner\` - Menampilkan kontak owner bot.\n\n` +
@@ -89,7 +103,7 @@ export async function handleMessage(sock: WASocket, m: { messages: proto.IWebMes
                             `*Owner Only:*\n` +
                             `• \`${config.prefix}say <teks>\` - Mengulang pesan yang diketik owner.\n` +
                             `• \`${config.prefix}broadcast <teks>\` - Mengirim pesan ke semua chat aktif.\n\n` +
-                            `_Bot berjalan menggunakan Baileys v7.0+ (ESM + TS)_`;
+                            `_Bot berjalan menggunakan Baileys v7.0+ & Gemini AI (${process.env.GEMINI_MODEL || 'gemini-flash-latest'})_`;
                         
                         await sock.sendMessage(remoteJid, { text: menuText }, { quoted: msg });
                         break;
@@ -183,12 +197,24 @@ export async function handleMessage(sock: WASocket, m: { messages: proto.IWebMes
                         break;
                 }
             } else {
-                // Auto replies based on keywords
-                const lowerText = text.toLowerCase();
-                if (lowerText === 'halo' || lowerText === 'hai' || lowerText === 'hi') {
-                    await sock.sendMessage(remoteJid, { text: `Halo! Saya adalah *${config.botName}*. Ketik \`${config.prefix}help\` untuk melihat daftar perintah.` }, { quoted: msg });
-                } else if (lowerText === 'p' || lowerText === 'assalamualaikum') {
-                    await sock.sendMessage(remoteJid, { text: 'Waalaikumsalam / Halo! Silakan hubungi saya atau gunakan command bot.' }, { quoted: msg });
+                // Auto AI responses in DMs (if enabled)
+                if (!isGroup && !isMe && config.autoAiResponse) {
+                    // Update WhatsApp status to "typing" to make it natural
+                    await sock.sendPresenceUpdate('composing', remoteJid);
+                    
+                    // Request response from Gemini
+                    const aiReply = await askGemini(text);
+                    
+                    // Send response
+                    await sock.sendMessage(remoteJid, { text: aiReply }, { quoted: msg });
+                } else {
+                    // Standard replies based on keywords
+                    const lowerText = text.toLowerCase();
+                    if (lowerText === 'halo' || lowerText === 'hai' || lowerText === 'hi') {
+                        await sock.sendMessage(remoteJid, { text: `Halo! Saya adalah *${config.botName}*. Ketik \`${config.prefix}help\` untuk melihat daftar perintah.` }, { quoted: msg });
+                    } else if (lowerText === 'p' || lowerText === 'assalamualaikum') {
+                        await sock.sendMessage(remoteJid, { text: 'Waalaikumsalam / Halo! Silakan hubungi saya atau gunakan command bot.' }, { quoted: msg });
+                    }
                 }
             }
         }

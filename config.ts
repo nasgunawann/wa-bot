@@ -6,6 +6,7 @@ export interface BotConfig {
     respondToSelf: boolean;
     welcomeMessage: string;
     goodbyeMessage: string;
+    autoAiResponse: boolean; // Toggle for AI automatic responses in DMs
 }
 
 const config: BotConfig = {
@@ -30,7 +31,10 @@ const config: BotConfig = {
     welcomeMessage: 'Selamat datang di grup! Silakan patuhi peraturan yang ada.',
     
     // Goodbye message for groups
-    goodbyeMessage: 'Selamat tinggal! Semoga sukses di tempat baru.'
+    goodbyeMessage: 'Selamat tinggal! Semoga sukses di tempat baru.',
+    
+    // Enable/Disable auto AI response in DMs
+    autoAiResponse: true
 };
 
 export default config;

@@ -1,5 +1,6 @@
 # Dependency directories
 node_modules/
+.antigravitycli
 
 # WhatsApp Bot Sessions (contains private keys - MUST IGNORE)
 auth_session/

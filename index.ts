@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import QRCode from 'qrcode';
 import { handleMessage, handleGroupParticipants } from './handler.js';
+import { initScheduler } from './scheduler.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -122,6 +123,9 @@ async function startBot() {
                 console.log(`👉 Pengguna: ${sock.user.name || 'Bot'} (${sock.user.id.split(':')[0]})`);
             }
             console.log('=============================================\n');
+            
+            // Inisialisasi tugas penjadwalan otomatis
+            initScheduler(sock);
         }
     });
 
