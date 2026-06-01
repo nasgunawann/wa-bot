@@ -41,8 +41,11 @@ export async function processAutoAssistant(
             
             const wasMentionedInArray = mentionedJids.includes(botJid);
             const wasMentionedInText = text.includes(`@${botNumber}`);
+            
+            // Check if user is replying/quoting a message generated/sent by the bot
+            const isReplyingToBot = contextInfo?.participant === botJid;
 
-            if (wasMentionedInArray || wasMentionedInText) {
+            if (wasMentionedInArray || wasMentionedInText || isReplyingToBot) {
                 shouldReply = true;
                 
                 // Clean the @mention tag from the text prompt to give Gemini a cleaner context

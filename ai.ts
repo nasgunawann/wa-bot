@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import "dotenv/config";
+import { googleSearchTool, formatSearchCitations } from "./modules/search.js";
 
 const apiKey = process.env.GEMINI_API_KEY || "";
 const modelName = process.env.GEMINI_MODEL || "gemini-flash-latest";
@@ -16,10 +17,10 @@ interface ChatMessage {
 const chatHistories = new Map<string, ChatMessage[]>();
 
 /**
- * Send a prompt to the configured Gemini model with conversation memory support
+ * Send a prompt to the configured Gemini model with conversation memory and automatic Google Search grounding
  * @param prompt The current message text
  * @param sessionId Optional identifier (e.g. sender WhatsApp JID) to persist history
- * @returns Generated text response
+ * @returns Generated text response with dynamic search citations if needed
  */
 export async function askGemini(prompt: string, sessionId?: string): Promise<string> {
   if (!apiKey) {
@@ -45,11 +46,22 @@ export async function askGemini(prompt: string, sessionId?: string): Promise<str
       contents: contents,
       config: {
         systemInstruction:
-          "Kamu adalah asisten pintar bernama Nanasgunung Creative Bot. Jawablah menggunakan bahasa Indonesia yang santun, ramah, kreatif, dan informatif. Ingat riwayat percakapan yang diberikan untuk memberikan jawaban yang logis dan berkesinambungan.",
+          "Kamu adalah asisten pintar bernama Nanasgunung Creative Bot. Jawablah menggunakan bahasa Indonesia yang santun, ramah, kreatif, dan informatif. Ingat riwayat percakapan yang diberikan untuk memberikan jawaban yang logis. Gunakan data terbaru dari internet secara otomatis jika pertanyaan membutuhkan informasi terkini.",
+        // Integrate the externalized Google Search tool here
+        tools: [googleSearchTool],
       },
     });
 
-    const replyText = response.text || "Maaf, saya tidak dapat merumuskan jawaban saat ini.";
+    let replyText = response.text || "Maaf, saya tidak dapat merumuskan jawaban saat ini.";
+
+    // Append dynamic citations using the isolated search module
+    const citations = formatSearchCitations(response);
+    if (citations) {
+      replyText += citations;
+    }
+
+    // Clean and format Gemini's Markdown output into native WhatsApp styling
+    replyText = formatToWhatsApp(replyText);
 
     if (sessionId) {
       // Append the new interaction to the history
@@ -83,4 +95,34 @@ export function clearChatHistory(sessionId: string): boolean {
   }
   return false;
 }
+
+/**
+ * Converts standard Markdown formats into WhatsApp-native styling
+ * @param text Raw Markdown text from Gemini
+ */
+export function formatToWhatsApp(text: string): string {
+  if (!text) return text;
+
+  let formatted = text;
+
+  // 1. Convert standard Markdown links [Text](URL) -> *Text*: URL (WhatsApp doesn't support Markdown links)
+  formatted = formatted.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '*$1*: $2');
+
+  // 2. Convert standard Markdown Bold **text** -> *text* (WhatsApp bold uses single asterisk)
+  formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '*$1*');
+
+  // 3. Convert Markdown headers (#, ##, ###) into clean bold WhatsApp headers with visual dividers
+  formatted = formatted.replace(/^(#{1,6})\s+(.+)$/gm, '\n*==== $2 ====\n*');
+
+  // 4. Standardize bullet lists: Replace markdown '- ' or '* ' at start of lines with a clean '• ' bullet point
+  formatted = formatted.replace(/^[\s]*[-*]\s+/gm, '• ');
+
+  // 5. Clean up any accidental triple blank lines into single ones
+  formatted = formatted.replace(/\n{3,}/g, '\n\n');
+
+  return formatted.trim();
+}
+
+
+
 
