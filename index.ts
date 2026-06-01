@@ -240,7 +240,7 @@ app.post("/api/schedule-message", (req, res: any) => {
   res.json({ success: true, schedule: newSchedule });
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 app.listen(PORT, () => {
   console.log(`🌐 Web UI Dashboard is running at http://localhost:${PORT}`);
 });

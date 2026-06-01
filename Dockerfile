@@ -21,7 +21,7 @@ COPY . .
 RUN mkdir -p auth_session
 
 # Ekspos port Express Web Dashboard (sesuai port di index.ts)
-EXPOSE 3000
+EXPOSE 3001
 
 # Jalankan bot WhatsApp menggunakan perintah start pnpm
 CMD ["pnpm", "start"]

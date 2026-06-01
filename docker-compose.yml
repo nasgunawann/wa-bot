@@ -5,7 +5,7 @@ services:
     build: .
     container_name: wa-bot-container
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       # Mount folder auth_session untuk menjaga persistensi pairing sesi WhatsApp
       - ./auth_session:/app/auth_session
@@ -15,4 +15,5 @@ services:
       - .env
     environment:
       - TZ=Asia/Jakarta
+      - PORT=3001
     restart: always
