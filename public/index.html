@@ -783,7 +783,10 @@
 
                         <div class="form-group">
                             <label>Target Chat Pengingat Sholat</label>
-                            <input type="text" id="cfgSholatTarget" class="input-control" placeholder="6281234567890">
+                            <input type="text" id="cfgSholatTarget" class="input-control" placeholder="6281234567890 atau 1203630000@g.us">
+                            <span style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+                                Masukkan nomor tujuan pribadi (contoh: <code>628123456789</code>) atau ID Grup WhatsApp lengkap (contoh: <code>12036312345678@g.us</code>).
+                            </span>
                         </div>
 
                         <div class="form-group">
@@ -947,7 +950,8 @@
             document.getElementById('cfgAutoAi').checked = data.autoAiResponse;
             document.getElementById('cfgSholat').checked = data.sholatReminderEnabled;
             
-            const cleanSholatTarget = data.sholatReminderTarget ? data.sholatReminderTarget.split('@')[0] : '';
+            const target = data.sholatReminderTarget || '';
+            const cleanSholatTarget = target.endsWith('@s.whatsapp.net') ? target.split('@')[0] : target;
             document.getElementById('cfgSholatTarget').value = cleanSholatTarget;
             
             document.getElementById('cfgWelcome').value = data.welcomeMessage;

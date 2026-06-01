@@ -1,0 +1,14 @@
+{
+  "prefix": "/",
+  "owners": [
+    "6281265945954@s.whatsapp.net"
+  ],
+  "botName": "Nanasgunung Creative Bot",
+  "autoRead": true,
+  "respondToSelf": false,
+  "welcomeMessage": "Selamat datang di grup! Silakan patuhi peraturan yang ada.",
+  "goodbyeMessage": "Selamat tinggal! Semoga sukses di tempat baru.",
+  "autoAiResponse": true,
+  "sholatReminderEnabled": true,
+  "sholatReminderTarget": "628126367752-1624361925@g.us"
+}
