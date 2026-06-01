@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity WA Bot Dashboard</title>
+    <!-- Google Fonts Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0b0f19;
+            --bg-surface: rgba(17, 24, 39, 0.75);
+            --border-glow: rgba(99, 102, 241, 0.2);
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 2rem;
+        }
+
+        .dashboard {
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glow);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 1.5rem;
+        }
+
+        .brand h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--text-main), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .brand p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+            box-shadow: 0 0 10px var(--text-muted);
+        }
+
+        .status-badge.connected .status-dot {
+            background-color: var(--success);
+            box-shadow: 0 0 12px var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        .status-badge.disconnected .status-dot {
+            background-color: var(--danger);
+            box-shadow: 0 0 12px var(--danger);
+            animation: pulse-danger 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes pulse-danger {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Overlay Auth System */
+        .overlay-container {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .blur-locked {
+            filter: blur(8px);
+            pointer-events: none;
+            opacity: 0.2;
+        }
+
+        .auth-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .auth-card {
+            background: rgba(17, 24, 39, 0.9);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            max-width: 480px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .qr-wrapper {
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+        }
+
+        #qrImageElement {
+            width: 220px;
+            height: 220px;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .auth-instructions h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .auth-instructions p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .auth-instructions ol {
+            text-align: left;
+            margin: 12px 0 0 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Forms Styling */
+        .form-section h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .selector-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 1rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: var(--text-main);
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .input-control {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .input-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+        }
+
+        textarea.input-control {
+            resize: none;
+            min-height: 120px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(90deg, var(--primary), #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        /* History Section */
+        .history-section {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            max-height: 420px;
+        }
+
+        .history-section h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .log-container {
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 4px;
+        }
+
+        /* Custom Scrollbar */
+        .log-container::-webkit-scrollbar {
+            width: 5px;
+        }
+        .log-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .log-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .log-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+        }
+
+        .log-type {
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .log-type.dm {
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--secondary);
+        }
+
+        .log-type.group {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .log-to {
+            color: var(--text-muted);
+        }
+
+        .log-time {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .log-body {
+            color: var(--text-main);
+            word-break: break-all;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            margin: auto;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="dashboard">
+        <header>
+            <div class="brand">
+                <h1>Antigravity Dashboard</h1>
+                <p>Kirim pesan WhatsApp otomatis via Baileys v7</p>
+            </div>
+            <div class="status-badge disconnected" id="statusBadge">
+                <span class="status-dot"></span>
+                <span id="statusText">Disconnected</span>
+            </div>
+        </header>
+
+        <div class="overlay-container">
+            <!-- Authentication QR code Card -->
+            <div class="auth-overlay" id="authOverlay">
+                <div class="auth-card" id="authCard">
+                    <div class="spinner" id="authSpinner"></div>
+                    <div class="qr-wrapper" id="qrWrapper" style="display: none;">
+                        <img id="qrImageElement" src="" alt="WhatsApp QR Code">
+                    </div>
+                    <div class="auth-instructions">
+                        <h3 id="authTitle">Menghubungkan Sesi...</h3>
+                        <p id="authSubtitle">Silakan tunggu selagi kami memicu koneksi WhatsApp.</p>
+                        <ol id="authList" style="display: none;">
+                            <li>Buka aplikasi WhatsApp di ponsel Anda.</li>
+                            <li>Ketuk <b>Menu</b> atau <b>Pengaturan</b> dan pilih <b>Perangkat Tertaut</b>.</li>
+                            <li>Ketuk <b>Tautkan Perangkat</b> lalu arahkan kamera ponsel ke kode QR di atas.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Interactive Content (will be blurred when unauthorized) -->
+            <div class="main-content blur-locked" id="mainContent">
+                <div class="form-section">
+                    <h2>Kirim Pesan Baru</h2>
+                    
+                    <div class="form-group">
+                        <label>Tipe Tujuan</label>
+                        <div class="selector-tabs">
+                            <button class="tab-btn active" id="tabDm" onclick="setChatType('dm')">Obrolan Pribadi (DM)</button>
+                            <button class="tab-btn" id="tabGroup" onclick="setChatType('group')">Grup Chat</button>
+                        </div>
+                    </div>
+
+                    <form id="messageForm" onsubmit="sendMessage(event)">
+                        <div class="form-group">
+                            <label id="targetLabel">Nomor WA Tujuan</label>
+                            <input type="text" id="targetJid" class="input-control" placeholder="6281234567890" required>
+                            <span id="hintText" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
+                                Masukkan nomor lengkap menggunakan kode negara tanpa tanda "+" (contoh: 6281234567890).
+                            </span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Isi Pesan</label>
+                            <textarea id="messageContent" class="input-control" placeholder="Ketik pesan Anda di sini..." required></textarea>
+                        </div>
+
+                        <button type="submit" id="btnSubmit" class="btn-submit">
+                            <span>Kirim Pesan</span> 🚀
+                        </button>
+                    </form>
+                </div>
+
+                <div class="history-section">
+                    <h2>Riwayat Terkirim</h2>
+                    <div class="log-container" id="logContainer">
+                        <div class="empty-state">Belum ada pesan terkirim dari web.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeType = 'dm';
+    let isConnected = false;
+
+    // Fetch connection and QR status from Express API
+    async function checkStatus() {
+        try {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+            
+            const badge = document.getElementById('statusBadge');
+            const statusText = document.getElementById('statusText');
+            
+            const authOverlay = document.getElementById('authOverlay');
+            const mainContent = document.getElementById('mainContent');
+            
+            const authSpinner = document.getElementById('authSpinner');
+            const qrWrapper = document.getElementById('qrWrapper');
+            const qrImageElement = document.getElementById('qrImageElement');
+            
+            const authTitle = document.getElementById('authTitle');
+            const authSubtitle = document.getElementById('authSubtitle');
+            const authList = document.getElementById('authList');
+
+            isConnected = data.connected;
+
+            if (isConnected) {
+                // Update badge to success
+                badge.className = 'status-badge connected';
+                statusText.innerText = 'Connected';
+                
+                // Hide authorization blocker and remove blur
+                authOverlay.style.display = 'none';
+                mainContent.classList.remove('blur-locked');
+            } else {
+                // Update badge to disconnected
+                badge.className = 'status-badge disconnected';
+                statusText.innerText = 'Disconnected';
+                
+                // Display authorization block and blur underlying content
+                authOverlay.style.display = 'flex';
+                mainContent.classList.add('blur-locked');
+
+                if (data.qrImage) {
+                    // Display the server-side pre-generated base64 image directly
+                    authSpinner.style.display = 'none';
+                    qrWrapper.style.display = 'flex';
+                    
+                    authTitle.innerText = 'Pindai Kode QR Anda';
+                    authSubtitle.innerText = 'Tautkan WhatsApp Anda dengan memindai kode di bawah:';
+                    authList.style.display = 'block';
+
+                    // Simply set src of <img> tag!
+                    if (qrImageElement.src !== data.qrImage) {
+                        qrImageElement.src = data.qrImage;
+                    }
+                } else {
+                    // Waiting for QR / loading state
+                    qrWrapper.style.display = 'none';
+                    authSpinner.style.display = 'block';
+                    authTitle.innerText = 'Menghubungkan Sesi...';
+                    authSubtitle.innerText = 'Menunggu modul Baileys membangkitkan kunci QR. Silakan cek konsol server jika memakan waktu terlalu lama.';
+                    authList.style.display = 'none';
+                }
+            }
+        } catch (e) {
+            console.error('Failed to communicate with Express API status endpoint', e);
+        }
+    }
+
+    function setChatType(type) {
+        activeType = type;
+        const tabDm = document.getElementById('tabDm');
+        const tabGroup = document.getElementById('tabGroup');
+        const targetLabel = document.getElementById('targetLabel');
+        const targetJid = document.getElementById('targetJid');
+        const hintText = document.getElementById('hintText');
+
+        if (type === 'dm') {
+            tabDm.classList.add('active');
+            tabGroup.classList.remove('active');
+            targetLabel.innerText = 'Nomor WA Tujuan';
+            targetJid.placeholder = '6281234567890';
+            hintText.innerText = 'Masukkan nomor lengkap menggunakan kode negara tanpa tanda "+" (contoh: 6281234567890).';
+        } else {
+            tabDm.classList.remove('active');
+            tabGroup.classList.add('active');
+            targetLabel.innerText = 'ID Grup (JID)';
+            targetJid.placeholder = '120363293847291028@g.us';
+            hintText.innerText = 'Masukkan ID grup WhatsApp lengkap dengan akhiran @g.us.';
+        }
+    }
+
+    async function sendMessage(e) {
+        e.preventDefault();
+        if (!isConnected) return;
+
+        const targetJidInput = document.getElementById('targetJid');
+        const messageContentInput = document.getElementById('messageContent');
+        const btn = document.getElementById('btnSubmit');
+
+        let jid = targetJidInput.value.trim();
+        const text = messageContentInput.value;
+
+        // Auto append domain helper for DM
+        if (activeType === 'dm' && !jid.includes('@')) {
+            jid = jid + '@s.whatsapp.net';
+        }
+
+        btn.setAttribute('disabled', 'true');
+        btn.innerText = 'Mengirim...';
+
+        try {
+            const response = await fetch('/api/send-message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ jid, text })
+            });
+
+            const result = await response.json();
+            btn.removeAttribute('disabled');
+            btn.innerHTML = '<span>Kirim Pesan</span> 🚀';
+
+            if (result.success) {
+                // Add to history log
+                addToLog(activeType, jid, text);
+                messageContentInput.value = '';
+            } else {
+                alert('Gagal mengirim pesan: ' + result.error);
+            }
+        } catch (error) {
+            btn.removeAttribute('disabled');
+            btn.innerHTML = '<span>Kirim Pesan</span> 🚀';
+            alert('Error saat mengirim: ' + error.message);
+        }
+    }
+
+    function addToLog(type, to, message) {
+        const container = document.getElementById('logContainer');
+        const emptyState = container.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+
+        const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        
+        const logItem = document.createElement('div');
+        logItem.className = 'log-item';
+        
+        const displayTo = to.split('@')[0];
+
+        logItem.innerHTML = `
+            <div class="log-header">
+                <span class="log-type ${type}">${type === 'dm' ? 'DM' : 'GROUP'}</span>
+                <span class="log-to">Ke: <b>${displayTo}</b></span>
+                <span class="log-time">${timeStr}</span>
+            </div>
+            <div class="log-body">${escapeHtml(message)}</div>
+        `;
+
+        container.insertBefore(logItem, container.firstChild);
+    }
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Auto poll status every 2 seconds for active reactive feel
+    setInterval(checkStatus, 2000);
+    checkStatus();
+</script>
+</body>
+</html>

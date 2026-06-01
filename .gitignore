@@ -1,0 +1,25 @@
+# Dependency directories
+node_modules/
+
+# WhatsApp Bot Sessions (contains private keys - MUST IGNORE)
+auth_session/
+
+# Production build outputs (if compiling)
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# OS Files
+.DS_Store
+Thumbs.db
