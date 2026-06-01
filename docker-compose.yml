@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   wa-bot:
-    build: .
+    image: wa-bot-image
     container_name: wa-bot-container
     ports:
       - "3001:3001"
