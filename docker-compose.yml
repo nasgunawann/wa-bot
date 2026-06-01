@@ -1,7 +1,7 @@
 services:
   wa-bot:
-    image: wa-bot-image
-    container_name: wa-bot-container
+    image: wa-bot
+    container_name: wa-bot
     ports:
       - "3001:3001"
     volumes:
