@@ -46,7 +46,7 @@
 
         .container {
             width: 100%;
-            max-width: 950px;
+            max-width: 980px;
             padding: 2rem;
         }
 
@@ -142,7 +142,7 @@
         /* Overlay Auth System */
         .overlay-container {
             position: relative;
-            min-height: 440px;
+            min-height: 520px;
         }
 
         .main-content {
@@ -250,14 +250,14 @@
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .form-group label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -295,7 +295,7 @@
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
-            padding: 12px 16px;
+            padding: 10px 14px;
             color: var(--text-main);
             font-size: 0.95rem;
         }
@@ -308,7 +308,7 @@
 
         textarea.input-control {
             resize: none;
-            min-height: 110px;
+            min-height: 80px;
         }
 
         .btn-submit {
@@ -326,6 +326,7 @@
             justify-content: center;
             align-items: center;
             gap: 8px;
+            margin-top: 6px;
         }
 
         .btn-submit:hover {
@@ -337,6 +338,102 @@
             transform: translateY(0);
         }
 
+        /* Config Card Dashboard */
+        .config-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-top: 1.5rem;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        /* Config Scrollbar */
+        .config-card::-webkit-scrollbar {
+            width: 4px;
+        }
+        .config-card::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .config-card h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            color: var(--secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 6px;
+        }
+
+        .config-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .switch-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .switch-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .switch-desc {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Simple Checkbox Toggle */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px; width: 16px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
         /* History & Scheduler Section */
         .side-section {
             background: rgba(0, 0, 0, 0.15);
@@ -345,13 +442,73 @@
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            max-height: 480px;
+            max-height: 600px;
         }
 
         .side-section h2 {
             font-size: 1.1rem;
             margin-bottom: 1rem;
             font-weight: 600;
+        }
+
+        /* Sholat Schedule Widget */
+        .sholat-widget {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .sholat-widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .sholat-widget-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sholat-widget-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .sholat-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+        }
+
+        .sholat-time-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 6px 4px;
+            text-align: center;
+        }
+
+        .sholat-name {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .sholat-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
         }
 
         .log-container {
@@ -465,6 +622,25 @@
             color: var(--text-muted);
             margin-top: 1rem;
         }
+
+        .btn-config-save {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            color: var(--secondary);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn-config-save:hover {
+            background: var(--secondary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -508,7 +684,7 @@
                     <div class="selector-tabs">
                         <button class="tab-btn active" id="tabDm" onclick="setMode('dm')">Obrolan Pribadi (DM)</button>
                         <button class="tab-btn" id="tabGroup" onclick="setMode('group')">Grup Chat</button>
-                        <button class="tab-btn" id="tabAuto" onclick="setMode('auto')">Otomatisasi (Scheduler)</button>
+                        <button class="tab-btn" id="tabAuto" onclick="setMode('auto')">Otomatisasi & Pengaturan</button>
                     </div>
 
                     <h2 id="modeTitle">Kirim Pesan Baru</h2>
@@ -540,9 +716,121 @@
                             <span id="btnText">Kirim Pesan</span> 🚀
                         </button>
                     </form>
+
+                    <!-- Runtime FULL Config Panel (Only in Automation mode) -->
+                    <div class="config-card" id="configCard" style="display: none;">
+                        <h3>⚙️ Pengaturan Seluruh Fitur (config.ts)</h3>
+                        
+                        <div class="config-grid-2">
+                            <div class="form-group">
+                                <label>Nama Bot</label>
+                                <input type="text" id="cfgBotName" class="input-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Prefix Command</label>
+                                <input type="text" id="cfgPrefix" class="input-control">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nomor JID Owner (Pisahkan Koma)</label>
+                            <input type="text" id="cfgOwners" class="input-control" placeholder="6281234567890">
+                        </div>
+
+                        <div class="switch-group">
+                            <div>
+                                <div class="switch-label">Auto Read Messages</div>
+                                <div class="switch-desc">Tandai pesan terbaca otomatis bila ditujukan ke bot.</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="cfgAutoRead">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="switch-group">
+                            <div>
+                                <div class="switch-label">Respons Pesan Sendiri</div>
+                                <div class="switch-desc">Merespon perintah yang diketik oleh nomor bot sendiri.</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="cfgRespondSelf">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="switch-group">
+                            <div>
+                                <div class="switch-label">Gemini Auto-Assistant DM</div>
+                                <div class="switch-desc">Balas chat otomatis di DM pribadi memakai otak Gemini AI.</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="cfgAutoAi">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="switch-group" style="margin-bottom: 1rem;">
+                            <div>
+                                <div class="switch-label">Pengingat Jadwal Sholat Medan</div>
+                                <div class="switch-desc">Kirim alarm otomatis saat waktu sholat Kota Medan tiba.</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="cfgSholat">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Target Chat Pengingat Sholat</label>
+                            <input type="text" id="cfgSholatTarget" class="input-control" placeholder="6281234567890">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Pesan Sambutan Grup (Welcome)</label>
+                            <textarea id="cfgWelcome" class="input-control"></textarea>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label>Pesan Perpisahan Grup (Goodbye)</label>
+                            <textarea id="cfgGoodbye" class="input-control"></textarea>
+                        </div>
+
+                        <button onclick="saveFullConfig()" class="btn-config-save">💾 Simpan Semua Pengaturan</button>
+                    </div>
                 </div>
 
                 <div class="side-section">
+                    <!-- Sholat Schedule Widget (visible when status reports timings) -->
+                    <div class="sholat-widget" id="sholatWidget" style="display: none;">
+                        <div class="sholat-widget-header">
+                            <div class="sholat-widget-title">🕌 Jadwal Sholat Medan</div>
+                            <div class="sholat-widget-date" id="sholatWidgetDate">1 Juni 2026</div>
+                        </div>
+                        <div class="sholat-grid">
+                            <div class="sholat-time-card">
+                                <div class="sholat-name">Subuh</div>
+                                <div class="sholat-value" id="sholatSubuh">--:--</div>
+                            </div>
+                            <div class="sholat-time-card">
+                                <div class="sholat-name">Dzuhur</div>
+                                <div class="sholat-value" id="sholatDzuhur">--:--</div>
+                            </div>
+                            <div class="sholat-time-card">
+                                <div class="sholat-name">Ashar</div>
+                                <div class="sholat-value" id="sholatAshar">--:--</div>
+                            </div>
+                            <div class="sholat-time-card">
+                                <div class="sholat-name">Maghrib</div>
+                                <div class="sholat-value" id="sholatMaghrib">--:--</div>
+                            </div>
+                            <div class="sholat-time-card">
+                                <div class="sholat-name">Isya</div>
+                                <div class="sholat-value" id="sholatIsya">--:--</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <h2 id="sideTitle">Riwayat Terkirim</h2>
                     <div class="log-container" id="logContainer">
                         <div class="empty-state" id="emptyStateText">Belum ada pesan terkirim dari web.</div>
@@ -620,8 +908,96 @@
                     authList.style.display = 'none';
                 }
             }
+
+            // Render live sholat schedule from API status
+            const sholatWidget = document.getElementById('sholatWidget');
+            if (data.sholat && data.sholat.schedule) {
+                sholatWidget.style.display = 'block';
+                document.getElementById('sholatWidgetDate').innerText = data.sholat.date;
+                
+                const s = data.sholat.schedule;
+                document.getElementById('sholatSubuh').innerText = s.subuh;
+                document.getElementById('sholatDzuhur').innerText = s.dzuhur;
+                document.getElementById('sholatAshar').innerText = s.ashar;
+                document.getElementById('sholatMaghrib').innerText = s.maghrib;
+                document.getElementById('sholatIsya').innerText = s.isya;
+            } else {
+                sholatWidget.style.display = 'none';
+            }
         } catch (e) {
             console.error('Failed to communicate with API status', e);
+        }
+    }
+
+    // Load full configurations from Express API
+    async function loadFullConfig() {
+        try {
+            const res = await fetch('/api/config');
+            const data = await res.json();
+            
+            document.getElementById('cfgBotName').value = data.botName;
+            document.getElementById('cfgPrefix').value = data.prefix;
+            
+            // Join JID array to comma separated string (cleaned from JID suffix for easier reading)
+            const cleanOwners = data.owners.map(o => o.split('@')[0]).join(', ');
+            document.getElementById('cfgOwners').value = cleanOwners;
+            
+            document.getElementById('cfgAutoRead').checked = data.autoRead;
+            document.getElementById('cfgRespondSelf').checked = data.respondToSelf;
+            document.getElementById('cfgAutoAi').checked = data.autoAiResponse;
+            document.getElementById('cfgSholat').checked = data.sholatReminderEnabled;
+            
+            const cleanSholatTarget = data.sholatReminderTarget ? data.sholatReminderTarget.split('@')[0] : '';
+            document.getElementById('cfgSholatTarget').value = cleanSholatTarget;
+            
+            document.getElementById('cfgWelcome').value = data.welcomeMessage;
+            document.getElementById('cfgGoodbye').value = data.goodbyeMessage;
+        } catch (error) {
+            console.error('Gagal memuat konfigurasi:', error);
+        }
+    }
+
+    // Save full configurations back to Express API
+    async function saveFullConfig() {
+        const botName = document.getElementById('cfgBotName').value;
+        const prefix = document.getElementById('cfgPrefix').value;
+        const owners = document.getElementById('cfgOwners').value;
+        const autoRead = document.getElementById('cfgAutoRead').checked;
+        const respondToSelf = document.getElementById('cfgRespondSelf').checked;
+        const autoAiResponse = document.getElementById('cfgAutoAi').checked;
+        const sholatReminderEnabled = document.getElementById('cfgSholat').checked;
+        const sholatReminderTarget = document.getElementById('cfgSholatTarget').value;
+        const welcomeMessage = document.getElementById('cfgWelcome').value;
+        const goodbyeMessage = document.getElementById('cfgGoodbye').value;
+
+        try {
+            const res = await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    botName, 
+                    prefix, 
+                    owners, 
+                    autoRead, 
+                    respondToSelf, 
+                    autoAiResponse, 
+                    sholatReminderEnabled, 
+                    sholatReminderTarget,
+                    welcomeMessage,
+                    goodbyeMessage
+                })
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                alert('Semua pengaturan berhasil diperbarui secara real-time!');
+                loadFullConfig(); // reload
+            } else {
+                alert('Gagal menyimpan pengaturan: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Gagal memperbarui konfigurasi:', error);
+            alert('Error menyimpan pengaturan: ' + error.message);
         }
     }
 
@@ -642,6 +1018,7 @@
         const modeTitle = document.getElementById('modeTitle');
         const sideTitle = document.getElementById('sideTitle');
         const automationInfoWidget = document.getElementById('automationInfoWidget');
+        const configCard = document.getElementById('configCard');
 
         // Remove active class from all
         tabDm.classList.remove('active');
@@ -651,6 +1028,7 @@
         // Reset display configs
         datetimeGroup.style.display = 'none';
         automationInfoWidget.style.display = 'none';
+        configCard.style.display = 'none';
 
         if (mode === 'dm') {
             tabDm.classList.add('active');
@@ -682,8 +1060,10 @@
             
             datetimeGroup.style.display = 'block';
             automationInfoWidget.style.display = 'block';
+            configCard.style.display = 'block';
             btnText.innerText = 'Jadwalkan Pesan';
             
+            loadFullConfig();
             fetchAndRenderScheduledTasks();
         }
     }
@@ -798,8 +1178,7 @@
     async function fetchAndRenderScheduledTasks() {
         if (activeMode !== 'auto') return;
         const container = document.getElementById('logContainer');
-        container.innerHTML = '<div class="empty-state">Memuat data penjadwalan...</div>';
-
+        
         try {
             const response = await fetch('/api/schedules');
             const data = await response.json();

@@ -47,20 +47,36 @@ export async function handleMessage(sock: WASocket, m: { messages: proto.IWebMes
             // Extract sender JID
             const senderJid = isGroup ? (msg.key.participant || '') : remoteJid;
             
-            // Auto read if enabled
-            if (config.autoRead && !isMe) {
-                await sock.readMessages([msg.key]);
-            }
-            
             const text = extractText(msg).trim();
             if (!text) continue;
+            
+            // --- 🕵️‍♂️ LOGIKA AUTO READ CERDAS ---
+            const isCommand = text.startsWith(config.prefix);
+            const botNumber = sock.user?.id.split(':')[0];
+            const botJid = botNumber ? `${botNumber}@s.whatsapp.net` : null;
+            const contextInfo = msg.message?.extendedTextMessage?.contextInfo;
+            const mentionedJids = contextInfo?.mentionedJid || [];
+            
+            const isMentioned = isGroup && botNumber && botJid && (
+                mentionedJids.includes(botJid) || 
+                text.includes(`@${botNumber}`)
+            );
+
+            // Hanya tandai centang biru (read) jika:
+            // 1. autoRead diaktifkan dan bukan pesan kita sendiri
+            // 2. Chat berada di DM pribadi ATAU berupa command grup ATAU bot di-tag di grup
+            if (config.autoRead && !isMe) {
+                if (!isGroup || isCommand || isMentioned) {
+                    await sock.readMessages([msg.key]);
+                }
+            }
             
             // Log message
             const chatType = isGroup ? '[GROUP]' : '[DM]';
             console.log(`\x1b[36m${chatType}\x1b[0m From: ${senderJid} | Msg: ${text}`);
             
             // Check if it's a command
-            if (text.startsWith(config.prefix)) {
+            if (isCommand) {
                 const args = text.slice(config.prefix.length).trim().split(/ +/);
                 const command = args.shift()?.toLowerCase();
                 if (!command) continue;
