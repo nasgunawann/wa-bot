@@ -15,3 +15,10 @@ services:
       - TZ=Asia/Jakarta
       - PORT=3001
     restart: always
+    networks:
+      - proxy-net
+
+networks:
+  proxy-net:
+    external: true
+    name: proxy-net
