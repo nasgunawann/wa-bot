@@ -23,6 +23,30 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+// Live system logs store
+interface SystemLog {
+  time: string;
+  type: "info" | "warning" | "success" | "error";
+  message: string;
+}
+let systemLogs: SystemLog[] = [];
+
+/**
+ * Add a new log message to the system log history and console
+ */
+export function addLog(type: "info" | "warning" | "success" | "error", message: string) {
+  const time = new Date().toLocaleTimeString("id-ID");
+  systemLogs.push({ time, type, message });
+  if (systemLogs.length > 50) {
+    systemLogs.shift();
+  }
+  // Console logging based on type
+  if (type === "error") console.error(`❌ [${type.toUpperCase()}] ${message}`);
+  else if (type === "warning") console.warn(`⚠️ [${type.toUpperCase()}] ${message}`);
+  else if (type === "success") console.log(`✅ [${type.toUpperCase()}] ${message}`);
+  else console.log(`ℹ️ [${type.toUpperCase()}] ${message}`);
+}
+
 let sockInstance: WASocket | null = null;
 let isConnected = false;
 let currentQr: string | null = null;
@@ -37,6 +61,11 @@ interface ScheduledMessage {
   status: "pending" | "sent" | "failed";
 }
 let scheduledMessages: ScheduledMessage[] = [];
+
+// API route for live system logs
+app.get("/api/logs", (req, res) => {
+  res.json(systemLogs);
+});
 
 // API routes for Web UI status
 app.get("/api/status", (req, res) => {
@@ -226,13 +255,17 @@ app.post("/api/schedule-message", (req, res: any) => {
       return;
     }
     try {
-      console.log(
-        `⏰ Scheduler Web: Mengirim pesan terjadwal otomatis (ID: ${id}) ke: ${jid}`,
+      addLog(
+        "success",
+        `Scheduler Web: Mengirim pesan terjadwal otomatis (ID: ${id}) ke: ${jid}`,
       );
       await sockInstance.sendMessage(jid, { text });
       currentTask.status = "sent";
-    } catch (e) {
-      console.error(`❌ Gagal mengirim pesan terjadwal (ID: ${id}):`, e);
+    } catch (e: any) {
+      addLog(
+        "error",
+        `Gagal mengirim pesan terjadwal (ID: ${id}): ${e.message || e}`,
+      );
       currentTask.status = "failed";
     }
   }, delay);
@@ -242,16 +275,17 @@ app.post("/api/schedule-message", (req, res: any) => {
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 app.listen(PORT, () => {
-  console.log(`🌐 Web UI Dashboard is running at http://localhost:${PORT}`);
+  addLog("info", `Web UI Dashboard is running at http://localhost:${PORT}`);
 });
 
 async function startBot() {
-  console.log("🤖 Menginisialisasi Nanasgunung WhatsApp Bot...");
+  addLog("info", "Menginisialisasi Nanasgunung WhatsApp Bot...");
 
   // 1. Fetch the latest WhatsApp Web version to avoid handshake issues
   const { version, isLatest } = await fetchLatestBaileysVersion();
-  console.log(
-    `ℹ️ Menggunakan versi WA Web: v${version.join(".")}, isLatest: ${isLatest}`,
+  addLog(
+    "info",
+    `Menggunakan versi WA Web: v${version.join(".")}, isLatest: ${isLatest}`,
   );
 
   // 2. Setup multi file auth state for persistent sessions
@@ -280,11 +314,9 @@ async function startBot() {
           currentQrImage = url;
         })
         .catch((err) => {
-          console.error("❌ Gagal menghasilkan gambar QR di server:", err);
+          addLog("error", `Gagal menghasilkan gambar QR di server: ${err.message || err}`);
         });
-      console.log(
-        `📢 Kode QR baru dihasilkan! Kunjungi http://localhost:${PORT} untuk melakukan pemindaian.`,
-      );
+      addLog("info", "Kode QR baru dihasilkan! Silakan pindai di Dashboard Web.");
     }
 
     if (connection === "close") {
@@ -297,32 +329,29 @@ async function startBot() {
       const statusCode = errorReason?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
-      console.log(
-        `⚠️ Koneksi terputus. Alasan: ${errorReason?.message || "Unknown"} (Status Code: ${statusCode}). Reconnecting: ${shouldReconnect}`,
+      addLog(
+        "warning",
+        `Koneksi terputus. Alasan: ${errorReason?.message || "Unknown"} (Status Code: ${statusCode}). Reconnecting: ${shouldReconnect}`,
       );
 
       if (shouldReconnect) {
-        console.log("🔄 Mencoba menghubungkan kembali...");
+        addLog("info", "Mencoba menghubungkan kembali...");
         startBot();
       } else {
         currentQr = null;
         currentQrImage = null; // Clear QR Image if explicitly logged out
-        console.log(
-          '❌ Sesi telah berakhir atau Anda telah keluar. Silakan hapus folder "auth_session" dan mulai ulang bot.',
+        addLog(
+          "error",
+          'Sesi telah berakhir atau Anda telah keluar. Silakan hapus folder "auth_session" dan mulai ulang bot.',
         );
       }
     } else if (connection === "open") {
       isConnected = true;
       currentQr = null;
       currentQrImage = null; // Clear QR Image as we are connected
-      console.log("\n=============================================");
-      console.log("🎉 BOT TELAH BERHASIL TERHUBUNG KE WHATSAPP!");
-      if (sock.user) {
-        console.log(
-          `👉 Pengguna: ${sock.user.name || "Bot"} (${sock.user.id.split(":")[0]})`,
-        );
-      }
-      console.log("=============================================\n");
+      
+      const botUser = sock.user ? `${sock.user.name || "Bot"} (${sock.user.id.split(":")[0]})` : "WhatsApp Bot";
+      addLog("success", `BOT BERHASIL TERHUBUNG KE WHATSAPP! Pengguna: ${botUser}`);
 
       // Inisialisasi tugas penjadwalan otomatis
       initScheduler(sock);

@@ -1,1238 +1,677 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antigravity WA Bot Dashboard</title>
+<!doctype html>
+<html lang="id" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nanasgunung WA Bot Dashboard</title>
     <!-- Google Fonts Outfit -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Outfit", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
     <style>
-        :root {
-            --bg-base: #0b0f19;
-            --bg-surface: rgba(17, 24, 39, 0.75);
-            --border-glow: rgba(99, 102, 241, 0.2);
-            --primary: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.5);
-            --secondary: #06b6d4;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Outfit', sans-serif;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        body {
-            background-color: var(--bg-base);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%);
-        }
-
-        .container {
-            width: 100%;
-            max-width: 980px;
-            padding: 2rem;
-        }
-
-        .dashboard {
-            background: var(--bg-surface);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-glow);
-            border-radius: 24px;
-            padding: 2.5rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .dashboard::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 1.5rem;
-        }
-
-        .brand h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, var(--text-main), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-        }
-
-        .brand p {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .status-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 16px;
-            border-radius: 100px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--text-muted);
-            box-shadow: 0 0 10px var(--text-muted);
-        }
-
-        .status-badge.connected .status-dot {
-            background-color: var(--success);
-            box-shadow: 0 0 12px var(--success);
-            animation: pulse 2s infinite;
-        }
-
-        .status-badge.disconnected .status-dot {
-            background-color: var(--danger);
-            box-shadow: 0 0 12px var(--danger);
-            animation: pulse-danger 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.6; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        @keyframes pulse-danger {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.5; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* Overlay Auth System */
-        .overlay-container {
-            position: relative;
-            min-height: 520px;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1.2fr 1fr;
-            gap: 2rem;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .blur-locked {
-            filter: blur(8px);
-            pointer-events: none;
-            opacity: 0.2;
-        }
-
-        .auth-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .auth-card {
-            background: rgba(17, 24, 39, 0.9);
-            border: 1px solid var(--border-glow);
-            border-radius: 20px;
-            padding: 2.5rem;
-            text-align: center;
-            max-width: 480px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .qr-wrapper {
-            background: white;
-            padding: 16px;
-            border-radius: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
-        }
-
-        #qrImageElement {
-            width: 220px;
-            height: 220px;
-            display: block;
-            border-radius: 8px;
-        }
-
-        .auth-instructions h3 {
-            font-size: 1.2rem;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .auth-instructions p {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-
-        .auth-instructions ol {
-            text-align: left;
-            margin: 12px 0 0 20px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        /* Loading Spinner */
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.05);
-            border-top: 3px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Forms Styling */
-        .form-section h2 {
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
-            color: var(--text-main);
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .selector-tabs {
-            display: flex;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            padding: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 1.5rem;
-        }
-
-        .tab-btn {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: var(--text-main);
-            box-shadow: 0 4px 12px var(--primary-glow);
-        }
-
-        .input-control {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 10px 14px;
-            color: var(--text-main);
-            font-size: 0.95rem;
-        }
-
-        .input-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
-        }
-
-        textarea.input-control {
-            resize: none;
-            min-height: 80px;
-        }
-
-        .btn-submit {
-            width: 100%;
-            background: linear-gradient(90deg, var(--primary), #4f46e5);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            margin-top: 6px;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
-        }
-
-        .btn-submit:active {
-            transform: translateY(0);
-        }
-
-        /* Config Card Dashboard */
-        .config-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 1.2rem;
-            margin-top: 1.5rem;
-            max-height: 380px;
-            overflow-y: auto;
-        }
-
-        /* Config Scrollbar */
-        .config-card::-webkit-scrollbar {
-            width: 4px;
-        }
-        .config-card::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        .config-card h3 {
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
-            color: var(--secondary);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 6px;
-        }
-
-        .config-grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 1rem;
-        }
-
-        .switch-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .switch-label {
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .switch-desc {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        /* Simple Checkbox Toggle */
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255, 255, 255, 0.1);
-            transition: .4s;
-            border-radius: 34px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px; width: 16px;
-            left: 3px; bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--primary);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-
-        /* History & Scheduler Section */
-        .side-section {
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            max-height: 600px;
-        }
-
-        .side-section h2 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        /* Sholat Schedule Widget */
-        .sholat-widget {
-            background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
-            border: 1px solid rgba(99, 102, 241, 0.15);
-            border-radius: 16px;
-            padding: 1rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .sholat-widget-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 8px;
-            margin-bottom: 10px;
-        }
-
-        .sholat-widget-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--secondary);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .sholat-widget-date {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .sholat-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
-        }
-
-        .sholat-time-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 6px 4px;
-            text-align: center;
-        }
-
-        .sholat-name {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .sholat-value {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .log-container {
-            overflow-y: auto;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding-right: 4px;
-        }
-
-        /* Custom Scrollbar */
-        .log-container::-webkit-scrollbar {
-            width: 5px;
-        }
-        .log-container::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .log-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        .log-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 0.85rem;
-        }
-
-        .log-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-            font-size: 0.8rem;
-        }
-
-        .log-type {
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-        }
-
-        .log-type.dm {
-            background: rgba(6, 182, 212, 0.15);
-            color: var(--secondary);
-        }
-
-        .log-type.group {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
-        }
-
-        .log-type.scheduled {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--warning);
-        }
-
-        .status-pill {
-            font-weight: 700;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 100px;
-            text-transform: uppercase;
-        }
-
-        .status-pill.pending {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--warning);
-        }
-
-        .status-pill.sent {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
-        }
-
-        .status-pill.failed {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-        }
-
-        .log-to {
-            color: var(--text-muted);
-        }
-
-        .log-time {
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        .log-body {
-            color: var(--text-main);
-            word-break: break-all;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: var(--text-muted);
-            margin: auto;
-            font-size: 0.9rem;
-        }
-
-        .automation-info {
-            background: rgba(99, 102, 241, 0.05);
-            border: 1px solid rgba(99, 102, 241, 0.15);
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 0.8rem;
-            line-height: 1.5;
-            color: var(--text-muted);
-            margin-top: 1rem;
-        }
-
-        .btn-config-save {
-            background: rgba(6, 182, 212, 0.1);
-            border: 1px solid rgba(6, 182, 212, 0.3);
-            color: var(--secondary);
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 8px;
-        }
-
-        .btn-config-save:hover {
-            background: var(--secondary);
-            color: white;
-            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
-        }
+      /* Custom glassmorphism scrollbar & subtle glow rules */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.3);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.2);
+        border-radius: 99px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(99, 102, 241, 0.4);
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body
+    class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200"
+  >
+    <!-- Gradient Background Highlights -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      <div
+        class="absolute -top-40 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-[128px]"
+      ></div>
+      <div
+        class="absolute -bottom-40 -right-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-[128px]"
+      ></div>
+    </div>
 
-<div class="container">
-    <div class="dashboard">
-        <header>
-            <div class="brand">
-                <h1>Antigravity Dashboard</h1>
-                <p>Kirim pesan WhatsApp & Otomatisasi via Baileys v7</p>
-            </div>
-            <div class="status-badge disconnected" id="statusBadge">
-                <span class="status-dot"></span>
-                <span id="statusText">Disconnected</span>
-            </div>
+    <div class="relative z-10 max-w-6xl mx-auto px-4 py-8">
+      <!-- Main Panel Shell -->
+      <main
+        class="bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl shadow-2xl p-6 md:p-8 relative overflow-hidden"
+      >
+        <!-- Header Glow Strip -->
+        <div
+          class="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500"
+        ></div>
+
+        <!-- Dashboard Header -->
+        <header
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-800/60 mb-6"
+        >
+          <div>
+            <h1
+              class="text-2xl font-bold bg-gradient-to-r from-slate-50 via-slate-100 to-indigo-300 bg-clip-text text-transparent tracking-tight"
+            >
+              Nanasgunung Creative Bot
+            </h1>
+            <p class="text-sm text-slate-400 mt-1">
+              Dashboard
+            </p>
+          </div>
+
+          <!-- Status & Clock Container -->
+          <div class="flex items-center gap-3">
+              <!-- Real-Time Clock -->
+              <div id="realtimeClock" class="bg-slate-950/60 border border-slate-800 px-4 py-2 rounded-full text-xs font-mono text-slate-300 select-none flex items-center gap-1.5 shadow-inner">
+                  <span>🕒</span>
+                  <span id="clockTime" class="font-bold">00:00:00</span>
+              </div>
+
+              <!-- Status Badge -->
+              <div
+                id="statusBadge"
+                class="flex items-center gap-2 bg-slate-950/60 border border-slate-800 px-4 py-2 rounded-full text-xs font-semibold select-none"
+              >
+                <span
+                  class="w-2.5 h-2.5 rounded-full bg-slate-500 shadow-[0_0_10px_rgba(148,163,184,0.5)] animate-pulse"
+                  id="statusDot"
+                ></span>
+                <span id="statusText" class="text-slate-400"
+                  >Connecting Sesi...</span
+                >
+              </div>
+          </div>
         </header>
 
-        <div class="overlay-container">
-            <!-- Authentication QR code Card -->
-            <div class="auth-overlay" id="authOverlay">
-                <div class="auth-card" id="authCard">
-                    <div class="spinner" id="authSpinner"></div>
-                    <div class="qr-wrapper" id="qrWrapper" style="display: none;">
-                        <img id="qrImageElement" src="" alt="WhatsApp QR Code">
+        <!-- Dashboard Content Container (Holds Overlay and Panels) -->
+        <div class="relative min-h-[500px]">
+          <!-- QR Pairing Code Overlay (Visible when Disconnected) -->
+          <section
+            id="authOverlay"
+            class="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md rounded-2xl p-6 text-center transition-all duration-500 flex-col gap-4"
+          >
+            <div
+              id="authSpinner"
+              class="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"
+            ></div>
+            <div
+              id="qrWrapper"
+              class="hidden bg-white p-4 rounded-2xl shadow-[0_0_24px_rgba(99,102,241,0.25)] flex items-center justify-center"
+            >
+              <img
+                id="qrImageElement"
+                src=""
+                alt="WhatsApp QR Code"
+                class="w-52 h-52 rounded-lg block"
+              />
+            </div>
+            <div class="max-w-md">
+              <h3 id="authTitle" class="text-lg font-bold text-slate-100">
+                Menghubungkan Sesi...
+              </h3>
+              <p id="authSubtitle" class="text-sm text-slate-400 mt-1">
+                Menunggu modul Baileys membangkitkan kunci QR.
+              </p>
+              <ol
+                id="authList"
+                class="hidden text-left list-decimal list-inside text-xs text-slate-400 space-y-2 mt-4 bg-slate-900/60 p-4 border border-slate-800 rounded-xl"
+              >
+                <li>
+                  Buka aplikasi
+                  <span class="text-slate-200 font-medium">WhatsApp</span> di
+                  ponsel Anda.
+                </li>
+                <li>
+                  Ketuk tombol
+                  <span class="text-slate-200 font-medium">Menu</span> atau
+                  <span class="text-slate-200 font-medium">Pengaturan</span> dan
+                  pilih
+                  <span class="text-slate-200 font-medium"
+                    >Perangkat Tertaut</span
+                  >.
+                </li>
+                <li>
+                  Ketuk
+                  <span class="text-slate-200 font-medium"
+                    >Tautkan Perangkat</span
+                  >
+                  lalu arahkan kamera ponsel ke kode QR di atas.
+                </li>
+              </ol>
+            </div>
+          </section>
+
+          <!-- Core Panels Grid (Interactive Area) -->
+          <section
+            id="mainPanel"
+            class="grid grid-cols-1 lg:grid-cols-12 gap-8 opacity-25 pointer-events-none filter blur-[4px] transition-all duration-500"
+          >
+            <!-- Left Columns: Actions & Configurations Form (Tabs) -->
+            <div class="lg:col-span-7 flex flex-col gap-6">
+              <!-- Navigation Tab Selector -->
+              <nav
+                class="flex bg-slate-950/60 border border-slate-800 p-1.5 rounded-xl text-sm select-none gap-1"
+              >
+                <button
+                  id="tabBtnSend"
+                  class="flex-1 text-center py-2 px-3 rounded-lg font-medium transition-all cursor-pointer text-slate-400 hover:text-slate-200 active-tab-btn"
+                  data-target="panelSend"
+                >
+                  Kirim Pesan
+                </button>
+                <button
+                  id="tabBtnSchedule"
+                  class="flex-1 text-center py-2 px-3 rounded-lg font-medium transition-all cursor-pointer text-slate-400 hover:text-slate-200"
+                  data-target="panelSchedule"
+                >
+                  Jadwal Pesan
+                </button>
+                <button
+                  id="tabBtnSettings"
+                  class="flex-1 text-center py-2 px-3 rounded-lg font-medium transition-all cursor-pointer text-slate-400 hover:text-slate-200"
+                  data-target="panelSettings"
+                >
+                  Pengaturan Bot
+                </button>
+                <button
+                  id="tabBtnLogs"
+                  class="flex-1 text-center py-2 px-3 rounded-lg font-medium transition-all cursor-pointer text-slate-400 hover:text-slate-200"
+                  data-target="panelLogs"
+                >
+                  Log Aktivitas
+                </button>
+              </nav>
+
+              <!-- Tab 1: Instant Message Sender -->
+              <div
+                id="panelSend"
+                class="tab-panel bg-slate-900/20 border border-slate-800 p-5 rounded-2xl space-y-4"
+              >
+                <h2
+                  class="text-base font-bold text-slate-100 flex items-center gap-2"
+                >
+                  💬 Kirim Pesan Instan
+                </h2>
+                <form id="instantMessageForm" class="space-y-4">
+                  <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-slate-400"
+                      >Tujuan Kirim</label
+                    >
+                    <div
+                      class="flex bg-slate-950/60 border border-slate-800 rounded-xl overflow-hidden text-sm"
+                    >
+                      <select
+                        id="sendRecipientType"
+                        class="bg-transparent text-slate-200 px-3 border-r border-slate-800 focus:outline-none cursor-pointer"
+                      >
+                        <option value="dm" class="bg-slate-900">
+                          DM / Kontak
+                        </option>
+                        <option value="group" class="bg-slate-900">
+                          Grup WA
+                        </option>
+                      </select>
+                      <input
+                        type="text"
+                        id="sendTargetJid"
+                        class="bg-transparent flex-1 py-3 px-4 focus:outline-none text-slate-200 placeholder:text-slate-600"
+                        placeholder="6281234567890"
+                        required
+                      />
                     </div>
-                    <div class="auth-instructions">
-                        <h3 id="authTitle">Menghubungkan Sesi...</h3>
-                        <p id="authSubtitle">Silakan tunggu selagi kami memicu koneksi WhatsApp.</p>
-                        <ol id="authList" style="display: none;">
-                            <li>Buka aplikasi WhatsApp di ponsel Anda.</li>
-                            <li>Ketuk <b>Menu</b> atau <b>Pengaturan</b> dan pilih <b>Perangkat Tertaut</b>.</li>
-                            <li>Ketuk <b>Tautkan Perangkat</b> lalu arahkan kamera ponsel ke kode QR di atas.</li>
-                        </ol>
+                    <span class="text-[11px] text-slate-500" id="sendTargetHint"
+                      >Untuk DM masukkan nomor lengkap tanpa "+" (contoh:
+                      6281234567890).</span
+                    >
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-slate-400"
+                      >Isi Pesan</label
+                    >
+                    <textarea
+                      id="sendMessageContent"
+                      class="bg-slate-950/60 border border-slate-800 focus:border-indigo-500 focus:outline-none text-sm text-slate-200 placeholder:text-slate-600 py-3 px-4 rounded-xl w-full h-32 resize-none"
+                      placeholder="Ketik pesan Anda di sini..."
+                      required
+                    ></textarea>
+                  </div>
+                  <button
+                    type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm py-3 rounded-xl shadow-[0_4px_16px_rgba(99,102,241,0.25)] flex items-center justify-center gap-2 cursor-pointer transition"
+                  >
+                    <span>Kirim Pesan Sekarang</span> 🚀
+                  </button>
+                </form>
+              </div>
+
+              <!-- Tab 2: Message Scheduler -->
+              <div
+                id="panelSchedule"
+                class="tab-panel hidden bg-slate-900/20 border border-slate-800 p-5 rounded-2xl space-y-4"
+              >
+                <h2
+                  class="text-base font-bold text-slate-100 flex items-center gap-2"
+                >
+                  ⏰ Jadwalkan Pesan Baru
+                </h2>
+                <form id="schedulerMessageForm" class="space-y-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-2">
+                      <label class="text-xs font-semibold text-slate-400"
+                        >Nomor / ID Grup Tujuan</label
+                      >
+                      <input
+                        type="text"
+                        id="scheduleTargetJid"
+                        class="bg-slate-950/60 border border-slate-800 focus:outline-none focus:border-indigo-500 text-sm text-slate-200 placeholder:text-slate-600 py-3 px-4 rounded-xl"
+                        placeholder="6281234567890 atau JID Grup"
+                        required
+                      />
                     </div>
+                    <div class="flex flex-col gap-2">
+                      <label class="text-xs font-semibold text-slate-400"
+                        >Waktu Pengiriman</label
+                      >
+                      <input
+                        type="datetime-local"
+                        id="scheduleDatetime"
+                        class="bg-slate-950/60 border border-slate-800 focus:outline-none focus:border-indigo-500 text-sm text-slate-200 py-2.5 px-4 rounded-xl cursor-pointer"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-slate-400"
+                      >Isi Pesan Otomatis</label
+                    >
+                    <textarea
+                      id="scheduleMessageContent"
+                      class="bg-slate-950/60 border border-slate-800 focus:border-indigo-500 focus:outline-none text-sm text-slate-200 placeholder:text-slate-600 py-3 px-4 rounded-xl w-full h-24 resize-none"
+                      placeholder="Tuliskan isi pesan otomatis..."
+                      required
+                    ></textarea>
+                  </div>
+                  <button
+                    type="submit"
+                    class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm py-3 rounded-xl shadow-[0_4px_16px_rgba(6,182,212,0.25)] flex items-center justify-center gap-2 cursor-pointer transition"
+                  >
+                    <span>Tambahkan Pesan Terjadwal</span> ➕
+                  </button>
+                </form>
+              </div>
+
+              <!-- Tab 3: Bot Configurations (config.json) -->
+              <div
+                id="panelSettings"
+                class="tab-panel hidden bg-slate-900/20 border border-slate-800 p-5 rounded-2xl space-y-4"
+              >
+                <h2
+                  class="text-base font-bold text-slate-100 flex items-center gap-2"
+                >
+                  ⚙️ Setelan Komponen Bot (config.json)
+                </h2>
+                <form
+                  id="botSettingsForm"
+                  class="space-y-4"
+                  onsubmit="event.preventDefault()"
+                >
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-2">
+                      <label class="text-xs font-semibold text-slate-400"
+                        >Nama Bot</label
+                      >
+                      <input
+                        type="text"
+                        id="cfgBotName"
+                        class="bg-slate-950/60 border border-slate-800 focus:outline-none text-sm text-slate-200 py-3 px-4 rounded-xl"
+                      />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                      <label class="text-xs font-semibold text-slate-400"
+                        >Prefix Perintah</label
+                      >
+                      <input
+                        type="text"
+                        id="cfgPrefix"
+                        class="bg-slate-950/60 border border-slate-800 focus:outline-none text-sm text-slate-200 py-3 px-4 rounded-xl"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-slate-400"
+                      >Nomor Owner JID (Pisahkan Koma)</label
+                    >
+                    <input
+                      type="text"
+                      id="cfgOwners"
+                      class="bg-slate-950/60 border border-slate-800 focus:outline-none text-sm text-slate-200 py-3 px-4 rounded-xl"
+                    />
+                  </div>
+
+                  <!-- Toggle Switches Grid -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <label
+                      class="flex justify-between items-center bg-slate-950/40 border border-slate-800/80 p-3 rounded-xl cursor-pointer select-none"
+                    >
+                      <div>
+                        <div class="text-xs font-semibold text-slate-200">
+                          Auto Read Messages
+                        </div>
+                        <span class="text-[10px] text-slate-500"
+                          >Tandai centang dua biru otomatis</span
+                        >
+                      </div>
+                      <input
+                        type="checkbox"
+                        id="cfgAutoRead"
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-slate-100 relative"
+                      ></div>
+                    </label>
+
+                    <label
+                      class="flex justify-between items-center bg-slate-950/40 border border-slate-800/80 p-3 rounded-xl cursor-pointer select-none"
+                    >
+                      <div>
+                        <div class="text-xs font-semibold text-slate-200">
+                          Merespon Pesan Sendiri
+                        </div>
+                        <span class="text-[10px] text-slate-500"
+                          >Bermanfaat untuk debugging</span
+                        >
+                      </div>
+                      <input
+                        type="checkbox"
+                        id="cfgRespondSelf"
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-slate-100 relative"
+                      ></div>
+                    </label>
+
+                    <label
+                      class="flex justify-between items-center bg-slate-950/40 border border-slate-800/80 p-3 rounded-xl cursor-pointer select-none"
+                    >
+                      <div>
+                        <div class="text-xs font-semibold text-slate-200">
+                          Gemini Auto-Assistant DM
+                        </div>
+                        <span class="text-[10px] text-slate-500"
+                          >Balas chat pribadi dengan AI</span
+                        >
+                      </div>
+                      <input
+                        type="checkbox"
+                        id="cfgAutoAi"
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-slate-100 relative"
+                      ></div>
+                    </label>
+
+                    <label
+                      class="flex justify-between items-center bg-slate-950/40 border border-slate-800/80 p-3 rounded-xl cursor-pointer select-none"
+                    >
+                      <div>
+                        <div class="text-xs font-semibold text-slate-200">
+                          Pengingat Sholat Medan
+                        </div>
+                        <span class="text-[10px] text-slate-500"
+                          >Kirim jadwal sholat ke WA</span
+                        >
+                      </div>
+                      <input
+                        type="checkbox"
+                        id="cfgSholat"
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-slate-100 relative"
+                      ></div>
+                    </label>
+                  </div>
+
+                  <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-slate-400"
+                      >Target Chat Pengingat Sholat</label
+                    >
+                    <input
+                      type="text"
+                      id="cfgSholatTarget"
+                      class="bg-slate-950/60 border border-slate-800 focus:outline-none text-sm text-slate-200 py-3 px-4 rounded-xl"
+                      placeholder="6281234567890 atau ID Grup"
+                    />
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-2">
+                      <label class="text-xs font-semibold text-slate-400"
+                        >Pesan Sambutan Grup (Welcome)</label
+                      >
+                      <textarea
+                        id="cfgWelcome"
+                        class="bg-slate-950/60 border border-slate-800 text-xs text-slate-200 py-3 px-4 rounded-xl h-20 resize-none"
+                      ></textarea>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                      <label class="text-xs font-semibold text-slate-400"
+                        >Pesan Perpisahan Grup (Goodbye)</label
+                      >
+                      <textarea
+                        id="cfgGoodbye"
+                        class="bg-slate-950/60 border border-slate-800 text-xs text-slate-200 py-3 px-4 rounded-xl h-20 resize-none"
+                      ></textarea>
+                    </div>
+                  </div>
+
+                  <button
+                    id="btnSaveConfig"
+                    class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm py-3 rounded-xl shadow-[0_4px_16px_rgba(16,185,129,0.25)] flex items-center justify-center gap-2 cursor-pointer transition"
+                  >
+                    <span>Simpan Semua Pengaturan</span> 💾
+                  </button>
+                </form>
+              </div>
+
+              <!-- Tab 4: Live Activity Logs [NEW] -->
+              <div
+                id="panelLogs"
+                class="tab-panel hidden bg-slate-900/20 border border-slate-800 p-5 rounded-2xl space-y-4"
+              >
+                <div
+                  class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                >
+                  <h2
+                    class="text-base font-bold text-slate-100 flex items-center gap-2"
+                  >
+                    📋 Log Aktivitas Sistem (Live)
+                  </h2>
+                  <input
+                    type="text"
+                    id="logSearchInput"
+                    class="w-full sm:w-48 bg-slate-950/60 border border-slate-800 focus:outline-none focus:border-indigo-500 text-xs text-slate-300 py-2 px-3 rounded-lg placeholder:text-slate-700"
+                    placeholder="Cari log..."
+                  />
                 </div>
+
+                <!-- Logs Box -->
+                <div
+                  class="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden"
+                >
+                  <div
+                    id="logsWrapper"
+                    class="h-80 overflow-y-auto p-4 font-mono text-[11px] leading-relaxed space-y-2"
+                  >
+                    <!-- Dynamic Logs injected here -->
+                    <div class="text-slate-600 italic">
+                      Mendengarkan logs sistem...
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <!-- Main Interactive Content (will be blurred when unauthorized) -->
-            <div class="main-content blur-locked" id="mainContent">
-                <div class="form-section">
-                    <div class="selector-tabs">
-                        <button class="tab-btn active" id="tabDm" onclick="setMode('dm')">Obrolan Pribadi (DM)</button>
-                        <button class="tab-btn" id="tabGroup" onclick="setMode('group')">Grup Chat</button>
-                        <button class="tab-btn" id="tabAuto" onclick="setMode('auto')">Otomatisasi & Pengaturan</button>
-                    </div>
-
-                    <h2 id="modeTitle">Kirim Pesan Baru</h2>
-                    
-                    <form id="messageForm" onsubmit="handleFormSubmit(event)">
-                        <div class="form-group" id="recipientGroup">
-                            <label id="targetLabel">Nomor WA Tujuan</label>
-                            <input type="text" id="targetJid" class="input-control" placeholder="6281234567890" required>
-                            <span id="hintText" style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
-                                Masukkan nomor lengkap menggunakan kode negara tanpa tanda "+" (contoh: 6281234567890).
-                            </span>
-                        </div>
-
-                        <!-- Date & Time Picker (only visible in Scheduler mode) -->
-                        <div class="form-group" id="datetimeGroup" style="display: none;">
-                            <label>Waktu Kirim Otomatis</label>
-                            <input type="datetime-local" id="scheduleDatetime" class="input-control">
-                            <span style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
-                                Tentukan tanggal dan waktu kapan pesan ini harus dikirim secara otomatis.
-                            </span>
-                        </div>
-
-                        <div class="form-group">
-                            <label id="contentLabel">Isi Pesan</label>
-                            <textarea id="messageContent" class="input-control" placeholder="Ketik pesan Anda di sini..." required></textarea>
-                        </div>
-
-                        <button type="submit" id="btnSubmit" class="btn-submit">
-                            <span id="btnText">Kirim Pesan</span> 🚀
-                        </button>
-                    </form>
-
-                    <!-- Runtime FULL Config Panel (Only in Automation mode) -->
-                    <div class="config-card" id="configCard" style="display: none;">
-                        <h3>⚙️ Pengaturan Seluruh Fitur (config.ts)</h3>
-                        
-                        <div class="config-grid-2">
-                            <div class="form-group">
-                                <label>Nama Bot</label>
-                                <input type="text" id="cfgBotName" class="input-control">
-                            </div>
-                            <div class="form-group">
-                                <label>Prefix Command</label>
-                                <input type="text" id="cfgPrefix" class="input-control">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Nomor JID Owner (Pisahkan Koma)</label>
-                            <input type="text" id="cfgOwners" class="input-control" placeholder="6281234567890">
-                        </div>
-
-                        <div class="switch-group">
-                            <div>
-                                <div class="switch-label">Auto Read Messages</div>
-                                <div class="switch-desc">Tandai pesan terbaca otomatis bila ditujukan ke bot.</div>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="cfgAutoRead">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <div class="switch-group">
-                            <div>
-                                <div class="switch-label">Respons Pesan Sendiri</div>
-                                <div class="switch-desc">Merespon perintah yang diketik oleh nomor bot sendiri.</div>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="cfgRespondSelf">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <div class="switch-group">
-                            <div>
-                                <div class="switch-label">Gemini Auto-Assistant DM</div>
-                                <div class="switch-desc">Balas chat otomatis di DM pribadi memakai otak Gemini AI.</div>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="cfgAutoAi">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <div class="switch-group" style="margin-bottom: 1rem;">
-                            <div>
-                                <div class="switch-label">Pengingat Jadwal Sholat Medan</div>
-                                <div class="switch-desc">Kirim alarm otomatis saat waktu sholat Kota Medan tiba.</div>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="cfgSholat">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Target Chat Pengingat Sholat</label>
-                            <input type="text" id="cfgSholatTarget" class="input-control" placeholder="6281234567890 atau 1203630000@g.us">
-                            <span style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">
-                                Masukkan nomor tujuan pribadi (contoh: <code>628123456789</code>) atau ID Grup WhatsApp lengkap (contoh: <code>12036312345678@g.us</code>).
-                            </span>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Pesan Sambutan Grup (Welcome)</label>
-                            <textarea id="cfgWelcome" class="input-control"></textarea>
-                        </div>
-
-                        <div class="form-group" style="margin-bottom: 8px;">
-                            <label>Pesan Perpisahan Grup (Goodbye)</label>
-                            <textarea id="cfgGoodbye" class="input-control"></textarea>
-                        </div>
-
-                        <button onclick="saveFullConfig()" class="btn-config-save">💾 Simpan Semua Pengaturan</button>
-                    </div>
+            <!-- Right Columns: Schedules List & Mosque Widget -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
+              <!-- Medan Prayer Times Widget -->
+              <div
+                id="sholatWidget"
+                class="bg-slate-900/20 border border-slate-800 p-5 rounded-2xl space-y-4 shadow-inner"
+                style="display: none"
+              >
+                <div
+                  class="flex justify-between items-center pb-2 border-b border-slate-800/40"
+                >
+                  <h3
+                    class="text-sm font-bold text-slate-200 flex items-center gap-1.5"
+                  >
+                    🕌 Jadwal Sholat Medan
+                  </h3>
+                  <span
+                    id="sholatWidgetDate"
+                    class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-1 rounded-md font-semibold"
+                    >1 Juni 2026</span
+                  >
                 </div>
-
-                <div class="side-section">
-                    <!-- Sholat Schedule Widget (visible when status reports timings) -->
-                    <div class="sholat-widget" id="sholatWidget" style="display: none;">
-                        <div class="sholat-widget-header">
-                            <div class="sholat-widget-title">🕌 Jadwal Sholat Medan</div>
-                            <div class="sholat-widget-date" id="sholatWidgetDate">1 Juni 2026</div>
-                        </div>
-                        <div class="sholat-grid">
-                            <div class="sholat-time-card">
-                                <div class="sholat-name">Subuh</div>
-                                <div class="sholat-value" id="sholatSubuh">--:--</div>
-                            </div>
-                            <div class="sholat-time-card">
-                                <div class="sholat-name">Dzuhur</div>
-                                <div class="sholat-value" id="sholatDzuhur">--:--</div>
-                            </div>
-                            <div class="sholat-time-card">
-                                <div class="sholat-name">Ashar</div>
-                                <div class="sholat-value" id="sholatAshar">--:--</div>
-                            </div>
-                            <div class="sholat-time-card">
-                                <div class="sholat-name">Maghrib</div>
-                                <div class="sholat-value" id="sholatMaghrib">--:--</div>
-                            </div>
-                            <div class="sholat-time-card">
-                                <div class="sholat-name">Isya</div>
-                                <div class="sholat-value" id="sholatIsya">--:--</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h2 id="sideTitle">Riwayat Terkirim</h2>
-                    <div class="log-container" id="logContainer">
-                        <div class="empty-state" id="emptyStateText">Belum ada pesan terkirim dari web.</div>
-                    </div>
-                    
-                    <!-- Automation Status widget under list -->
-                    <div class="automation-info" id="automationInfoWidget" style="display: none;">
-                        💡 <b>Tugas Latar Belakang Aktif:</b><br>
-                        • Daily Motivation (07:00 AM) — <i>Aktif</i><br>
-                        • Hourly System Health-Check — <i>Aktif</i><br>
-                        • Gemini Auto-Assistant DM — <i>Aktif</i>
-                    </div>
+                <div class="grid grid-cols-5 gap-2 text-center text-xs">
+                  <div
+                    class="bg-slate-950/60 border border-slate-800/60 p-2 rounded-xl"
+                    id="cardSubuh"
+                  >
+                    <span
+                      class="block text-[10px] text-slate-500 font-semibold mb-1"
+                      >Subuh</span
+                    >
+                    <strong class="text-slate-200" id="sholatSubuh"
+                      >--:--</strong
+                    >
+                  </div>
+                  <div
+                    class="bg-slate-950/60 border border-slate-800/60 p-2 rounded-xl"
+                    id="cardDzuhur"
+                  >
+                    <span
+                      class="block text-[10px] text-slate-500 font-semibold mb-1"
+                      >Dzuhur</span
+                    >
+                    <strong class="text-slate-200" id="sholatDzuhur"
+                      >--:--</strong
+                    >
+                  </div>
+                  <div
+                    class="bg-slate-950/60 border border-slate-800/60 p-2 rounded-xl"
+                    id="cardAshar"
+                  >
+                    <span
+                      class="block text-[10px] text-slate-500 font-semibold mb-1"
+                      >Ashar</span
+                    >
+                    <strong class="text-slate-200" id="sholatAshar"
+                      >--:--</strong
+                    >
+                  </div>
+                  <div
+                    class="bg-slate-950/60 border border-slate-800/60 p-2 rounded-xl"
+                    id="cardMaghrib"
+                  >
+                    <span
+                      class="block text-[10px] text-slate-500 font-semibold mb-1"
+                      >Maghrib</span
+                    >
+                    <strong class="text-slate-200" id="sholatMaghrib"
+                      >--:--</strong
+                    >
+                  </div>
+                  <div
+                    class="bg-slate-950/60 border border-slate-800/60 p-2 rounded-xl"
+                    id="cardIsya"
+                  >
+                    <span
+                      class="block text-[10px] text-slate-500 font-semibold mb-1"
+                      >Isya</span
+                    >
+                    <strong class="text-slate-200" id="sholatIsya"
+                      >--:--</strong
+                    >
+                  </div>
                 </div>
+              </div>
+
+              <!-- Active Scheduled Messages Table -->
+              <div
+                class="bg-slate-900/20 border border-slate-800 p-5 rounded-2xl space-y-4 flex-1 flex flex-col min-h-[300px]"
+              >
+                <h3
+                  class="text-sm font-bold text-slate-200 flex items-center gap-2"
+                >
+                  📅 Antrean Pesan Terjadwal
+                </h3>
+
+                <div class="flex-1 overflow-y-auto max-h-96 pr-1">
+                  <div id="schedulesWrapper" class="space-y-3">
+                    <!-- Dynamic list of schedules -->
+                    <div class="text-center text-xs text-slate-600 py-12">
+                      Belum ada antrean pesan terjadwal.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Background Job Info Box -->
+              <div
+                class="bg-indigo-500/[0.02] border border-indigo-500/10 rounded-2xl p-4 text-xs text-slate-500 space-y-2"
+              >
+                <span class="font-bold text-slate-400 block mb-1"
+                  >💡 Tugas Latar Belakang Aktif:</span
+                >
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-500" id="statusDotSholat"></span>
+                  <span>Medan Prayer Alerts (WIB) — <i id="statusTextSholat" class="not-italic font-semibold">Memuat...</i></span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span
+                    >Daily Motivation Scheduler (07:00 AM) — <i>Aktif</i></span
+                  >
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span>Hourly System Health-Check — <i>Aktif</i></span>
+                </div>
+              </div>
             </div>
+          </section>
         </div>
+      </main>
     </div>
-</div>
 
-<script>
-    let activeMode = 'dm';
-    let isConnected = false;
-    let sentHistory = [];
-
-    // Fetch status and QR
-    async function checkStatus() {
-        try {
-            const res = await fetch('/api/status');
-            const data = await res.json();
-            
-            const badge = document.getElementById('statusBadge');
-            const statusText = document.getElementById('statusText');
-            
-            const authOverlay = document.getElementById('authOverlay');
-            const mainContent = document.getElementById('mainContent');
-            
-            const authSpinner = document.getElementById('authSpinner');
-            const qrWrapper = document.getElementById('qrWrapper');
-            const qrImageElement = document.getElementById('qrImageElement');
-            
-            const authTitle = document.getElementById('authTitle');
-            const authSubtitle = document.getElementById('authSubtitle');
-            const authList = document.getElementById('authList');
-
-            isConnected = data.connected;
-
-            if (isConnected) {
-                badge.className = 'status-badge connected';
-                statusText.innerText = 'Connected';
-                
-                authOverlay.style.display = 'none';
-                mainContent.classList.remove('blur-locked');
-            } else {
-                badge.className = 'status-badge disconnected';
-                statusText.innerText = 'Disconnected';
-                
-                authOverlay.style.display = 'flex';
-                mainContent.classList.add('blur-locked');
-
-                if (data.qrImage) {
-                    authSpinner.style.display = 'none';
-                    qrWrapper.style.display = 'flex';
-                    
-                    authTitle.innerText = 'Pindai Kode QR Anda';
-                    authSubtitle.innerText = 'Tautkan WhatsApp Anda dengan memindai kode di bawah:';
-                    authList.style.display = 'block';
-
-                    if (qrImageElement.src !== data.qrImage) {
-                        qrImageElement.src = data.qrImage;
-                    }
-                } else {
-                    qrWrapper.style.display = 'none';
-                    authSpinner.style.display = 'block';
-                    authTitle.innerText = 'Menghubungkan Sesi...';
-                    authSubtitle.innerText = 'Menunggu modul Baileys membangkitkan kunci QR. Silakan cek konsol server jika memakan waktu terlalu lama.';
-                    authList.style.display = 'none';
-                }
-            }
-
-            // Render live sholat schedule from API status
-            const sholatWidget = document.getElementById('sholatWidget');
-            if (data.sholat && data.sholat.schedule) {
-                sholatWidget.style.display = 'block';
-                document.getElementById('sholatWidgetDate').innerText = data.sholat.date;
-                
-                const s = data.sholat.schedule;
-                document.getElementById('sholatSubuh').innerText = s.subuh;
-                document.getElementById('sholatDzuhur').innerText = s.dzuhur;
-                document.getElementById('sholatAshar').innerText = s.ashar;
-                document.getElementById('sholatMaghrib').innerText = s.maghrib;
-                document.getElementById('sholatIsya').innerText = s.isya;
-            } else {
-                sholatWidget.style.display = 'none';
-            }
-        } catch (e) {
-            console.error('Failed to communicate with API status', e);
-        }
-    }
-
-    // Load full configurations from Express API
-    async function loadFullConfig() {
-        try {
-            const res = await fetch('/api/config');
-            const data = await res.json();
-            
-            document.getElementById('cfgBotName').value = data.botName;
-            document.getElementById('cfgPrefix').value = data.prefix;
-            
-            // Join JID array to comma separated string (cleaned from JID suffix for easier reading)
-            const cleanOwners = data.owners.map(o => o.split('@')[0]).join(', ');
-            document.getElementById('cfgOwners').value = cleanOwners;
-            
-            document.getElementById('cfgAutoRead').checked = data.autoRead;
-            document.getElementById('cfgRespondSelf').checked = data.respondToSelf;
-            document.getElementById('cfgAutoAi').checked = data.autoAiResponse;
-            document.getElementById('cfgSholat').checked = data.sholatReminderEnabled;
-            
-            const target = data.sholatReminderTarget || '';
-            const cleanSholatTarget = target.endsWith('@s.whatsapp.net') ? target.split('@')[0] : target;
-            document.getElementById('cfgSholatTarget').value = cleanSholatTarget;
-            
-            document.getElementById('cfgWelcome').value = data.welcomeMessage;
-            document.getElementById('cfgGoodbye').value = data.goodbyeMessage;
-        } catch (error) {
-            console.error('Gagal memuat konfigurasi:', error);
-        }
-    }
-
-    // Save full configurations back to Express API
-    async function saveFullConfig() {
-        const botName = document.getElementById('cfgBotName').value;
-        const prefix = document.getElementById('cfgPrefix').value;
-        const owners = document.getElementById('cfgOwners').value;
-        const autoRead = document.getElementById('cfgAutoRead').checked;
-        const respondToSelf = document.getElementById('cfgRespondSelf').checked;
-        const autoAiResponse = document.getElementById('cfgAutoAi').checked;
-        const sholatReminderEnabled = document.getElementById('cfgSholat').checked;
-        const sholatReminderTarget = document.getElementById('cfgSholatTarget').value;
-        const welcomeMessage = document.getElementById('cfgWelcome').value;
-        const goodbyeMessage = document.getElementById('cfgGoodbye').value;
-
-        try {
-            const res = await fetch('/api/config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    botName, 
-                    prefix, 
-                    owners, 
-                    autoRead, 
-                    respondToSelf, 
-                    autoAiResponse, 
-                    sholatReminderEnabled, 
-                    sholatReminderTarget,
-                    welcomeMessage,
-                    goodbyeMessage
-                })
-            });
-
-            const result = await res.json();
-            if (result.success) {
-                alert('Semua pengaturan berhasil diperbarui secara real-time!');
-                loadFullConfig(); // reload
-            } else {
-                alert('Gagal menyimpan pengaturan: ' + result.error);
-            }
-        } catch (error) {
-            console.error('Gagal memperbarui konfigurasi:', error);
-            alert('Error menyimpan pengaturan: ' + error.message);
-        }
-    }
-
-    // Toggle modes
-    function setMode(mode) {
-        activeMode = mode;
-        
-        const tabDm = document.getElementById('tabDm');
-        const tabGroup = document.getElementById('tabGroup');
-        const tabAuto = document.getElementById('tabAuto');
-        
-        const targetLabel = document.getElementById('targetLabel');
-        const targetJid = document.getElementById('targetJid');
-        const hintText = document.getElementById('hintText');
-        
-        const datetimeGroup = document.getElementById('datetimeGroup');
-        const btnText = document.getElementById('btnText');
-        const modeTitle = document.getElementById('modeTitle');
-        const sideTitle = document.getElementById('sideTitle');
-        const automationInfoWidget = document.getElementById('automationInfoWidget');
-        const configCard = document.getElementById('configCard');
-
-        // Remove active class from all
-        tabDm.classList.remove('active');
-        tabGroup.classList.remove('active');
-        tabAuto.classList.remove('active');
-
-        // Reset display configs
-        datetimeGroup.style.display = 'none';
-        automationInfoWidget.style.display = 'none';
-        configCard.style.display = 'none';
-
-        if (mode === 'dm') {
-            tabDm.classList.add('active');
-            modeTitle.innerText = 'Kirim Pesan Baru';
-            sideTitle.innerText = 'Riwayat Terkirim';
-            targetLabel.innerText = 'Nomor WA Tujuan';
-            targetJid.placeholder = '6281234567890';
-            hintText.innerText = 'Masukkan nomor lengkap menggunakan kode negara tanpa tanda "+" (contoh: 6281234567890).';
-            btnText.innerText = 'Kirim Pesan';
-            
-            renderSentHistory();
-        } else if (mode === 'group') {
-            tabGroup.classList.add('active');
-            modeTitle.innerText = 'Kirim Pesan Baru';
-            sideTitle.innerText = 'Riwayat Terkirim';
-            targetLabel.innerText = 'ID Grup (JID)';
-            targetJid.placeholder = '120363293847291028@g.us';
-            hintText.innerText = 'Masukkan ID grup WhatsApp lengkap dengan akhiran @g.us.';
-            btnText.innerText = 'Kirim Pesan';
-            
-            renderSentHistory();
-        } else if (mode === 'auto') {
-            tabAuto.classList.add('active');
-            modeTitle.innerText = 'Jadwalkan Pesan Otomatis';
-            sideTitle.innerText = 'Tugas Terjadwal Aktif';
-            targetLabel.innerText = 'JID / Nomor WA Tujuan';
-            targetJid.placeholder = '6281234567890 atau ID Grup';
-            hintText.innerText = 'Tujuan pesan terjadwal (Nomor WA pribadi atau ID grup @g.us).';
-            
-            datetimeGroup.style.display = 'block';
-            automationInfoWidget.style.display = 'block';
-            configCard.style.display = 'block';
-            btnText.innerText = 'Jadwalkan Pesan';
-            
-            loadFullConfig();
-            fetchAndRenderScheduledTasks();
-        }
-    }
-
-    async function handleFormSubmit(e) {
-        e.preventDefault();
-        if (!isConnected) return;
-
-        const targetJidInput = document.getElementById('targetJid');
-        const messageContentInput = document.getElementById('messageContent');
-        const scheduleDatetimeInput = document.getElementById('scheduleDatetime');
-        const btn = document.getElementById('btnSubmit');
-
-        let jid = targetJidInput.value.trim();
-        const text = messageContentInput.value;
-
-        // Auto append domain for DM
-        if (!jid.includes('@')) {
-            jid = jid + '@s.whatsapp.net';
-        }
-
-        btn.setAttribute('disabled', 'true');
-
-        if (activeMode === 'auto') {
-            // Scheduler mode
-            const datetime = scheduleDatetimeInput.value;
-            if (!datetime) {
-                alert('Tentukan waktu kirim terlebih dahulu!');
-                btn.removeAttribute('disabled');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/schedule-message', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ jid, text, datetime })
-                });
-
-                const result = await response.json();
-                btn.removeAttribute('disabled');
-
-                if (result.success) {
-                    messageContentInput.value = '';
-                    scheduleDatetimeInput.value = '';
-                    fetchAndRenderScheduledTasks();
-                    alert('Pesan berhasil dijadwalkan secara otomatis!');
-                } else {
-                    alert('Gagal menjadwalkan: ' + result.error);
-                }
-            } catch (error) {
-                btn.removeAttribute('disabled');
-                alert('Error penjadwalan: ' + error.message);
-            }
-        } else {
-            // Instant Send Mode (DM or Group)
-            try {
-                const response = await fetch('/api/send-message', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ jid, text })
-                });
-
-                const result = await response.json();
-                btn.removeAttribute('disabled');
-
-                if (result.success) {
-                    addToSentHistory(activeMode, jid, text);
-                    messageContentInput.value = '';
-                } else {
-                    alert('Gagal mengirim pesan: ' + result.error);
-                }
-            } catch (error) {
-                btn.removeAttribute('disabled');
-                alert('Error pengiriman: ' + error.message);
-            }
-        }
-    }
-
-    function addToSentHistory(type, to, message) {
-        const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        sentHistory.unshift({ type, to, message, time: timeStr });
-        renderSentHistory();
-    }
-
-    function renderSentHistory() {
-        const container = document.getElementById('logContainer');
-        container.innerHTML = '';
-
-        if (sentHistory.length === 0) {
-            container.innerHTML = '<div class="empty-state">Belum ada pesan terkirim dari web.</div>';
-            return;
-        }
-
-        sentHistory.forEach(item => {
-            const logItem = document.createElement('div');
-            logItem.className = 'log-item';
-            const displayTo = item.to.split('@')[0];
-
-            logItem.innerHTML = `
-                <div class="log-header">
-                    <span class="log-type ${item.type}">${item.type === 'dm' ? 'DM' : 'GROUP'}</span>
-                    <span class="log-to">Ke: <b>${displayTo}</b></span>
-                    <span class="log-time">${item.time}</span>
-                </div>
-                <div class="log-body">${escapeHtml(item.message)}</div>
-            `;
-            container.appendChild(logItem);
-        });
-    }
-
-    async function fetchAndRenderScheduledTasks() {
-        if (activeMode !== 'auto') return;
-        const container = document.getElementById('logContainer');
-        
-        try {
-            const response = await fetch('/api/schedules');
-            const data = await response.json();
-            container.innerHTML = '';
-
-            if (data.length === 0) {
-                container.innerHTML = '<div class="empty-state">Belum ada tugas terjadwal kustom yang dibuat.</div>';
-                return;
-            }
-
-            // Render scheduled items
-            data.reverse().forEach(task => {
-                const logItem = document.createElement('div');
-                logItem.className = 'log-item';
-                const displayTo = task.jid.split('@')[0];
-
-                logItem.innerHTML = `
-                    <div class="log-header">
-                        <span class="log-type scheduled">SCHEDULED</span>
-                        <span class="log-to">Ke: <b>${displayTo}</b></span>
-                        <span class="status-pill ${task.status}">${task.status}</span>
-                    </div>
-                    <div class="log-body" style="margin-bottom: 6px;">${escapeHtml(task.text)}</div>
-                    <div class="log-time" style="font-size: 0.75rem; text-align: right;">Rencana Kirim: <b>${task.time}</b></div>
-                `;
-                container.appendChild(logItem);
-            });
-        } catch (error) {
-            container.innerHTML = '<div class="empty-state" style="color: var(--danger);">Gagal memuat tugas terjadwal.</div>';
-        }
-    }
-
-    function escapeHtml(text) {
-        return text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-    // Auto poll status
-    setInterval(() => {
-        checkStatus();
-        if (activeMode === 'auto') {
-            fetchAndRenderScheduledTasks();
-        }
-    }, 2500);
-
-    checkStatus();
-</script>
-</body>
+    <!-- Active ES Modules Script Entrypoint -->
+    <script type="module" src="app.js"></script>
+  </body>
 </html>

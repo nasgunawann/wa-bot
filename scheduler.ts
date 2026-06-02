@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { WASocket } from '@whiskeysockets/baileys';
 import { askGemini } from './ai.js';
 import config from './config.js';
+import { addLog } from './index.js';
 
 let activeSock: WASocket | null = null;
 
@@ -11,7 +12,7 @@ let activeSock: WASocket | null = null;
  */
 export function updateSchedulerSocket(newSock: WASocket) {
     activeSock = newSock;
-    console.log('🔄 Socket referensi di Scheduler berhasil diperbarui.');
+    addLog('info', 'Socket referensi di Scheduler berhasil diperbarui.');
 }
 
 /**
@@ -26,7 +27,7 @@ export function initScheduler(sock: WASocket) {
     }
     
     activeSock = sock;
-    console.log('⏰ Menginisialisasi sistem penjadwalan otomatis (Scheduler)...');
+    addLog('info', 'Menginisialisasi sistem penjadwalan otomatis (Scheduler)...');
 
     // ----------------------------------------------------------------------
     // Otomatisasi 1: Pengingat Motivasi Pagi Setiap Hari (Jam 07:00 AM)
@@ -35,7 +36,7 @@ export function initScheduler(sock: WASocket) {
     cron.schedule('0 7 * * *', async () => {
         try {
             if (!activeSock) return;
-            console.log('⏰ Scheduler: Mengirim pesan motivasi pagi otomatis...');
+            addLog('info', 'Scheduler: Mengirim pesan motivasi pagi otomatis...');
             
             // Tanya Gemini AI untuk membuat pesan motivasi segar
             const motivationPrompt = 'Berikan kutipan motivasi pagi hari yang segar, singkat, penuh energi positif, dan ramah untuk mengawali hari.';
@@ -46,9 +47,9 @@ export function initScheduler(sock: WASocket) {
             // Kirim ke JID pemilik (owner) pertama
             const targetJid = config.owners[0];
             await activeSock.sendMessage(targetJid, { text: messageText });
-            console.log(`✅ Pesan motivasi pagi berhasil dikirim ke: ${targetJid}`);
-        } catch (error) {
-            console.error('❌ Gagal menjalankan scheduler motivasi pagi:', error);
+            addLog('success', `Pesan motivasi pagi berhasil dikirim ke: ${targetJid}`);
+        } catch (error: any) {
+            addLog('error', `Gagal menjalankan scheduler motivasi pagi: ${error.message || error}`);
         }
     });
 
@@ -60,7 +61,7 @@ export function initScheduler(sock: WASocket) {
     cron.schedule('0 * * * *', async () => {
         try {
             if (!activeSock) return;
-            console.log('⏰ Scheduler: Menjalankan hourly system health-check...');
+            addLog('info', 'Scheduler: Menjalankan hourly system health-check...');
             const timeString = new Date().toLocaleTimeString('id-ID');
             
             const healthText = `🤖 *System Health Check* 🤖\n\n` +
@@ -71,12 +72,12 @@ export function initScheduler(sock: WASocket) {
             // Kirim ke owner sebagai notifikasi uptime bot
             const targetJid = config.owners[0];
             await activeSock.sendMessage(targetJid, { text: healthText });
-            console.log('✅ Health-check terkirim ke owner.');
-        } catch (error) {
-            console.error('❌ Gagal menjalankan scheduler health check:', error);
+            addLog('success', 'Health-check terkirim ke owner.');
+        } catch (error: any) {
+            addLog('error', `Gagal menjalankan scheduler health check: ${error.message || error}`);
         }
     });
 
-    console.log('✅ Seluruh tugas penjadwalan otomatis aktif di latar belakang!');
+    addLog('success', 'Seluruh tugas penjadwalan otomatis aktif di latar belakang!');
 }
 

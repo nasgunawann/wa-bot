@@ -1,6 +1,7 @@
 import { WASocket } from '@whiskeysockets/baileys';
 import { askGemini } from '../ai.js';
 import config from '../config.js';
+import { addLog } from '../index.js';
 
 export interface PrayerSchedule {
     subuh: string;
@@ -41,7 +42,7 @@ async function fetchMedanSchedule(): Promise<PrayerSchedule | null> {
             return todaySchedule;
         }
 
-        console.log(`🕌 Memulai pencarian ID Kota Medan di API Jadwal Sholat...`);
+        addLog('info', 'Memulai pencarian ID Kota Medan di API Jadwal Sholat...');
         const searchRes = await fetch('https://api.myquran.com/v2/sholat/kota/cari/medan');
         const searchData = await searchRes.json();
 
@@ -55,7 +56,7 @@ async function fetchMedanSchedule(): Promise<PrayerSchedule | null> {
             }
         }
 
-        console.log(`🕌 Mengunduh jadwal sholat Medan (ID: ${cityId}) untuk tanggal: ${dateStr}`);
+        addLog('info', `Mengunduh jadwal sholat Medan (ID: ${cityId}) untuk tanggal: ${dateStr}`);
         const scheduleRes = await fetch(`https://api.myquran.com/v2/sholat/jadwal/${cityId}/${year}/${month}/${day}`);
         const scheduleData = await scheduleRes.json();
 
@@ -70,11 +71,11 @@ async function fetchMedanSchedule(): Promise<PrayerSchedule | null> {
             };
             lastFetchedDate = dateStr;
             sentPrayersToday = {}; // Reset sent triggers for the new day
-            console.log('🕌 Jadwal Sholat Medan Terkini:', JSON.stringify(todaySchedule));
+            addLog('info', `Jadwal Sholat Medan Terkini berhasil dimuat.`);
             return todaySchedule;
         }
-    } catch (error) {
-        console.error('❌ Gagal memuat jadwal sholat Medan:', error);
+    } catch (error: any) {
+        addLog('error', `Gagal memuat jadwal sholat Medan: ${error.message || error}`);
     }
     return null;
 }
@@ -87,7 +88,7 @@ let activeSock: WASocket | null = null;
  */
 export function updateSholatSocket(newSock: WASocket) {
     activeSock = newSock;
-    console.log('🔄 Socket referensi di Sholat Reminder berhasil diperbarui.');
+    addLog('info', 'Socket referensi di Sholat Reminder berhasil diperbarui.');
 }
 
 /**
@@ -102,7 +103,7 @@ export function initSholatReminder(sock: WASocket) {
     }
 
     activeSock = sock;
-    console.log('🕌 Menginisialisasi modul pengingat jadwal sholat otomatis Kota Medan...');
+    addLog('info', 'Menginisialisasi modul pengingat jadwal sholat otomatis Kota Medan...');
 
     // Load initial schedule
     fetchMedanSchedule();
@@ -140,7 +141,7 @@ export function initSholatReminder(sock: WASocket) {
                 if (prayerTime === currentTimeStr && !sentPrayersToday[prayerName]) {
                     sentPrayersToday[prayerName] = true; // Mark as sent immediately to avoid loops
                     
-                    console.log(`🕌 Alarm Sholat: Waktunya sholat ${prayerName.toUpperCase()} (${prayerTime})!`);
+                    addLog('info', `Alarm Sholat: Waktunya sholat ${prayerName.toUpperCase()} (${prayerTime})!`);
 
                     // Request a peaceful spiritual reminder text from Gemini AI
                     const aiPrompt = `Tuliskan satu kalimat ucapan pengingat ibadah sholat yang damai, sejuk, dan memotivasi untuk waktu sholat ${prayerName.toUpperCase()} bagi umat muslim.`;
@@ -152,11 +153,11 @@ export function initSholatReminder(sock: WASocket) {
                         `*“Sesungguhnya shalat itu adalah fardhu yang ditentukan waktunya atas orang-orang yang beriman.” (An-Nisa: 103)*`;
 
                     await activeSock.sendMessage(targetJid, { text: alertText });
-                    console.log(`✅ Pesan alarm sholat ${prayerName} berhasil dikirim ke: ${targetJid}`);
+                    addLog('success', `Pesan alarm sholat ${prayerName} berhasil dikirim ke: ${targetJid}`);
                 }
             }
-        } catch (error) {
-            console.error('❌ Gagal memproses alarm scheduler sholat:', error);
+        } catch (error: any) {
+            addLog('error', `Gagal memproses alarm scheduler sholat: ${error.message || error}`);
         }
     }, 30000); // 30 seconds interval
 }
