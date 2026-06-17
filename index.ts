@@ -23,6 +23,11 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+// Keep reference to original console methods to prevent infinite loop
+const originalLog = console.log;
+const originalWarn = console.warn;
+const originalError = console.error;
+
 // Live system logs store
 interface SystemLog {
   time: string;
@@ -31,21 +36,53 @@ interface SystemLog {
 }
 let systemLogs: SystemLog[] = [];
 
+// Helper to strip ANSI color codes from terminal logs for Web UI presentation
+const stripAnsi = (str: string) => str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+
 /**
  * Add a new log message to the system log history and console
  */
 export function addLog(type: "info" | "warning" | "success" | "error", message: string) {
+  const cleanMessage = stripAnsi(message);
   const time = new Date().toLocaleTimeString("id-ID");
-  systemLogs.push({ time, type, message });
-  if (systemLogs.length > 50) {
+  systemLogs.push({ time, type, message: cleanMessage });
+  if (systemLogs.length > 100) {
     systemLogs.shift();
   }
-  // Console logging based on type
-  if (type === "error") console.error(`❌ [${type.toUpperCase()}] ${message}`);
-  else if (type === "warning") console.warn(`⚠️ [${type.toUpperCase()}] ${message}`);
-  else if (type === "success") console.log(`✅ [${type.toUpperCase()}] ${message}`);
-  else console.log(`ℹ️ [${type.toUpperCase()}] ${message}`);
+  // Console logging based on type using original methods to avoid recursion
+  if (type === "error") originalError(`❌ [${type.toUpperCase()}] ${message}`);
+  else if (type === "warning") originalWarn(`⚠️ [${type.toUpperCase()}] ${message}`);
+  else if (type === "success") originalLog(`✅ [${type.toUpperCase()}] ${message}`);
+  else originalLog(`ℹ️ [${type.toUpperCase()}] ${message}`);
 }
+
+// Monkey patch console functions to route all terminal output to web dashboard
+console.log = function (...args: any[]) {
+  const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+  if (message.startsWith('✅ [') || message.startsWith('❌ [') || message.startsWith('⚠️ [') || message.startsWith('ℹ️ [')) {
+    originalLog.apply(console, args);
+    return;
+  }
+  addLog("info", message);
+};
+
+console.warn = function (...args: any[]) {
+  const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+  if (message.startsWith('✅ [') || message.startsWith('❌ [') || message.startsWith('⚠️ [') || message.startsWith('ℹ️ [')) {
+    originalWarn.apply(console, args);
+    return;
+  }
+  addLog("warning", message);
+};
+
+console.error = function (...args: any[]) {
+  const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+  if (message.startsWith('✅ [') || message.startsWith('❌ [') || message.startsWith('⚠️ [') || message.startsWith('ℹ️ [')) {
+    originalError.apply(console, args);
+    return;
+  }
+  addLog("error", message);
+};
 
 let sockInstance: WASocket | null = null;
 let isConnected = false;
