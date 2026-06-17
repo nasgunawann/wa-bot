@@ -5,6 +5,60 @@ import { initLogsPanel } from './js/logs.js';
 
 let isConnected = false;
 
+/**
+ * Show a beautiful, non-blocking toast notification
+ * @param {string} message 
+ * @param {'success' | 'error' | 'info'} type 
+ */
+export function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `transform translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 rounded-xl border shadow-xl text-xs font-medium max-w-sm w-full`;
+    
+    let bgBorder = 'bg-slate-900/90 text-slate-100 border-slate-800';
+    let icon = 'ℹ️';
+
+    if (type === 'success') {
+        bgBorder = 'bg-emerald-950/95 text-emerald-300 border-emerald-800/60';
+        icon = '✅';
+    } else if (type === 'error') {
+        bgBorder = 'bg-rose-950/95 text-rose-300 border-rose-800/60';
+        icon = '❌';
+    }
+
+    toast.className += ` ${bgBorder}`;
+    toast.innerHTML = `
+        <div class="flex items-center gap-2">
+            <span>${icon}</span>
+            <span>${message}</span>
+        </div>
+        <button class="text-slate-500 hover:text-slate-300 font-bold ml-auto cursor-pointer focus:outline-none">&times;</button>
+    `;
+
+    toast.querySelector('button').addEventListener('click', () => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+    });
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+    }, 10);
+
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.classList.add('opacity-0', 'translate-y-2');
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, 4000);
+}
+
+// Bind to window for global access from legacy scripts
+window.showToast = showToast;
+
 // Initialize all dashboard components on page load
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
@@ -95,6 +149,11 @@ async function pollStatus() {
         const authSubtitle = document.getElementById('authSubtitle');
         const authList = document.getElementById('authList');
 
+        const profileCard = document.getElementById('botProfileCard');
+        const botAvatar = document.getElementById('botAvatar');
+        const botNameText = document.getElementById('botNameText');
+        const botJidText = document.getElementById('botJidText');
+
         isConnected = data.connected;
 
         if (isConnected) {
@@ -106,11 +165,31 @@ async function pollStatus() {
             // Hide auth overlay and enable dashboard control
             authOverlay.classList.add('hidden');
             mainPanel.classList.remove('opacity-25', 'pointer-events-none', 'filter', 'blur-[4px]');
+
+            // Render profile info
+            if (data.profile) {
+                profileCard.classList.remove('hidden');
+                profileCard.classList.add('flex');
+                botNameText.innerText = data.profile.name;
+                botJidText.innerText = data.profile.jid.split('@')[0];
+                if (data.profile.avatarUrl) {
+                    botAvatar.src = data.profile.avatarUrl;
+                } else {
+                    botAvatar.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${data.profile.jid}`;
+                }
+            } else {
+                profileCard.classList.add('hidden');
+                profileCard.classList.remove('flex');
+            }
         } else {
             // Update Connection Status Badge
             badge.className = "flex items-center gap-2 bg-slate-950/60 border border-rose-800/40 px-4 py-2 rounded-full text-xs font-semibold select-none text-rose-400";
             dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.6)] animate-pulse";
             text.innerText = "Disconnected";
+
+            // Hide profile card
+            profileCard.classList.add('hidden');
+            profileCard.classList.remove('flex');
 
             // Show QR pairing code overlay and blur dashboard
             authOverlay.classList.remove('hidden');

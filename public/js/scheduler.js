@@ -2,22 +2,43 @@
  * Custom Message Scheduler & Instant Sender panel handler
  */
 
+function getLocalISOString(date) {
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    return (new Date(date.getTime() - tzOffset)).toISOString().slice(0, 16);
+}
+
 export function initSchedulerPanel() {
-    // Set default datetime to 1 hour in the future for convenience
+    // Set default datetime and min limit to current local time
     const dtInput = document.getElementById('scheduleDatetime');
     if (dtInput) {
         const now = new Date();
-        now.setHours(now.getHours() + 1);
-        now.setMinutes(0);
-        dtInput.value = now.toISOString().slice(0, 16);
+        dtInput.min = getLocalISOString(now);
+
+        const future = new Date(now);
+        future.setHours(future.getHours() + 1);
+        future.setMinutes(0);
+        dtInput.value = getLocalISOString(future);
     }
 
-    // Recipient type select hint helper
+    // Recipient type select hint helper (Instant message)
     const typeSelect = document.getElementById('sendRecipientType');
     if (typeSelect) {
         typeSelect.addEventListener('change', () => {
             const hint = document.getElementById('sendTargetHint');
             if (typeSelect.value === 'group') {
+                hint.innerHTML = "Masukkan ID grup lengkap (contoh: <code>120363234567890@g.us</code>).";
+            } else {
+                hint.innerHTML = "Masukkan nomor lengkap tanpa + atau spasi (contoh: <code>6281234567890</code>).";
+            }
+        });
+    }
+
+    // Recipient type select hint helper (Scheduler)
+    const schedTypeSelect = document.getElementById('scheduleRecipientType');
+    if (schedTypeSelect) {
+        schedTypeSelect.addEventListener('change', () => {
+            const hint = document.getElementById('scheduleTargetHint');
+            if (schedTypeSelect.value === 'group') {
                 hint.innerHTML = "Masukkan ID grup lengkap (contoh: <code>120363234567890@g.us</code>).";
             } else {
                 hint.innerHTML = "Masukkan nomor lengkap tanpa + atau spasi (contoh: <code>6281234567890</code>).";
@@ -62,14 +83,14 @@ async function handleInstantSend(e) {
         const data = await res.json();
         
         if (data.success) {
-            alert('🚀 Pesan WhatsApp berhasil dikirim secara instan!');
+            window.showToast('Pesan WhatsApp berhasil dikirim secara instan!', 'success');
             document.getElementById('sendMessageContent').value = ''; // clear text
         } else {
-            alert('❌ Gagal mengirim pesan: ' + data.error);
+            window.showToast('Gagal mengirim pesan: ' + data.error, 'error');
         }
     } catch (err) {
         console.error('Error sending instant message:', err);
-        alert('❌ Terjadi kesalahan jaringan saat mengirim.');
+        window.showToast('Terjadi kesalahan jaringan saat mengirim.', 'error');
     }
 }
 
@@ -82,12 +103,15 @@ async function handleSchedulerAdd(e) {
     let jid = document.getElementById('scheduleTargetJid').value.trim();
     const datetime = document.getElementById('scheduleDatetime').value;
     const text = document.getElementById('scheduleMessageContent').value;
+    const type = document.getElementById('scheduleRecipientType').value;
 
     if (!jid || !datetime || !text) return;
 
-    if (!jid.includes('@')) {
-        // Default to contact if no domain provided
+    // Sanitize phone number suffix for contacts/groups
+    if (type === 'dm' && !jid.includes('@')) {
         jid = jid + '@s.whatsapp.net';
+    } else if (type === 'group' && !jid.includes('@')) {
+        jid = jid + '@g.us';
     }
 
     try {
@@ -99,15 +123,15 @@ async function handleSchedulerAdd(e) {
         const data = await res.json();
 
         if (data.success) {
-            alert('📅 Pesan berhasil dijadwalkan secara otomatis!');
+            window.showToast('Pesan berhasil dijadwalkan secara otomatis!', 'success');
             document.getElementById('scheduleMessageContent').value = ''; // clear text
             loadSchedulesList(); // reload queue
         } else {
-            alert('❌ Gagal menjadwalkan: ' + data.error);
+            window.showToast('Gagal menjadwalkan: ' + data.error, 'error');
         }
     } catch (err) {
         console.error('Error scheduling message:', err);
-        alert('❌ Terjadi kesalahan saat menghubungi API scheduler.');
+        window.showToast('Terjadi kesalahan saat menghubungi API scheduler.', 'error');
     }
 }
 

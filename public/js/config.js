@@ -107,10 +107,13 @@ function checkChanges() {
     const targetOriginal = originalConfig.sholatReminderTarget || '';
     const sholatTargetOriginal = targetOriginal.endsWith('@s.whatsapp.net') ? targetOriginal.split('@')[0] : targetOriginal;
 
+    const cleanOwnersInput = ownersInput.split(',').map(s => s.trim()).filter(Boolean).join(',');
+    const cleanOwnersOriginal = ownersOriginal.split(',').map(s => s.trim()).filter(Boolean).join(',');
+
     const hasChanged = 
         botName !== (originalConfig.botName || '') ||
         prefix !== (originalConfig.prefix || '/') ||
-        ownersInput.trim() !== ownersOriginal.trim() ||
+        cleanOwnersInput !== cleanOwnersOriginal ||
         autoRead !== !!originalConfig.autoRead ||
         respondToSelf !== !!originalConfig.respondToSelf ||
         autoAiResponse !== !!originalConfig.autoAiResponse ||
@@ -175,13 +178,13 @@ async function saveFullConfig(event) {
 
         const result = await res.json();
         if (result.success) {
-            alert('⚙️ Semua pengaturan berhasil diperbarui secara real-time di config.json!');
+            window.showToast('Semua pengaturan berhasil diperbarui!', 'success');
             loadFullConfig(); // reload to cache the new settings and disable the button again
         } else {
-            alert('❌ Gagal menyimpan pengaturan: ' + result.error);
+            window.showToast('Gagal menyimpan pengaturan: ' + result.error, 'error');
         }
     } catch (error) {
         console.error('Gagal memperbarui konfigurasi:', error);
-        alert('❌ Terjadi kesalahan: ' + error.message);
+        window.showToast('Terjadi kesalahan: ' + error.message, 'error');
     }
 }

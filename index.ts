@@ -67,6 +67,9 @@ app.get("/api/logs", (req, res) => {
   res.json(systemLogs);
 });
 
+// Bot profile caching
+let botProfile: { name: string; jid: string; avatarUrl: string | null } | null = null;
+
 // API routes for Web UI status
 app.get("/api/status", (req, res) => {
   const sholatInfo = getTodaySchedule();
@@ -75,6 +78,7 @@ app.get("/api/status", (req, res) => {
     qr: currentQr,
     qrImage: currentQrImage,
     sholat: sholatInfo,
+    profile: botProfile,
   });
 });
 
@@ -321,6 +325,7 @@ async function startBot() {
 
     if (connection === "close") {
       isConnected = false;
+      botProfile = null; // Reset profile when disconnected
       const errorReason =
         lastDisconnect?.error instanceof Boom
           ? lastDisconnect.error
@@ -352,6 +357,21 @@ async function startBot() {
       
       const botUser = sock.user ? `${sock.user.name || "Bot"} (${sock.user.id.split(":")[0]})` : "WhatsApp Bot";
       addLog("success", `BOT BERHASIL TERHUBUNG KE WHATSAPP! Pengguna: ${botUser}`);
+
+      // Fetch profile picture asynchronously to not block connection logic
+      const userJid = sock.user ? sock.user.id.split(":")[0] + "@s.whatsapp.net" : "";
+      botProfile = {
+        name: sock.user?.name || "WhatsApp Bot",
+        jid: userJid,
+        avatarUrl: null
+      };
+      sock.profilePictureUrl(sock.user!.id, "image")
+        .then((url) => {
+          if (botProfile) botProfile.avatarUrl = url || null;
+        })
+        .catch(() => {
+          // Keep it null if error (e.g. no profile picture)
+        });
 
       // Inisialisasi tugas penjadwalan otomatis
       initScheduler(sock);
