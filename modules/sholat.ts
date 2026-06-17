@@ -31,7 +31,8 @@ export function getTodaySchedule(): { schedule: PrayerSchedule | null; date: str
  */
 async function fetchMedanSchedule(): Promise<PrayerSchedule | null> {
     try {
-        const today = new Date();
+        // Adjust date to Asia/Jakarta (WIB) timezone
+        const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
@@ -108,6 +109,21 @@ export function initSholatReminder(sock: WASocket) {
     // Load initial schedule
     fetchMedanSchedule();
 
+    // Check group membership on startup if target is a group
+    const targetJid = config.sholatReminderTarget;
+    if (targetJid && targetJid.endsWith('@g.us')) {
+        setTimeout(async () => {
+            try {
+                if (activeSock && activeSock.ws && (activeSock.ws as any).readyState === 1) {
+                    await activeSock.groupMetadata(targetJid);
+                    addLog('success', `Pengingat Sholat: Terhubung ke grup target (${targetJid}).`);
+                }
+            } catch (e) {
+                addLog('warning', `Pengingat Sholat: Bot tidak dapat menemukan grup target (${targetJid}). Pastikan bot sudah bergabung di grup tersebut.`);
+            }
+        }, 5000);
+    }
+
     // Check timings every 30 seconds
     setInterval(async () => {
         try {
@@ -123,9 +139,10 @@ export function initSholatReminder(sock: WASocket) {
             const schedule = await fetchMedanSchedule();
             if (!schedule) return;
 
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
+            // Get current date/time adjusted to Asia/Jakarta (WIB) timezone
+            const dateInJakarta = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+            const hours = String(dateInJakarta.getHours()).padStart(2, '0');
+            const minutes = String(dateInJakarta.getMinutes()).padStart(2, '0');
             const currentTimeStr = `${hours}:${minutes}`;
 
             // Read target dynamically from config
@@ -141,6 +158,15 @@ export function initSholatReminder(sock: WASocket) {
                 if (prayerTime === currentTimeStr && !sentPrayersToday[prayerName]) {
                     sentPrayersToday[prayerName] = true; // Mark as sent immediately to avoid loops
                     
+                    if (targetJid.endsWith('@g.us')) {
+                        try {
+                            await activeSock.groupMetadata(targetJid);
+                        } catch (e: any) {
+                            addLog('error', `Alarm Sholat ${prayerName.toUpperCase()} Gagal: Bot tidak berada di grup target (${targetJid}).`);
+                            continue;
+                        }
+                    }
+
                     addLog('info', `Alarm Sholat: Waktunya sholat ${prayerName.toUpperCase()} (${prayerTime})!`);
 
                     // Request a peaceful spiritual reminder text from Gemini AI

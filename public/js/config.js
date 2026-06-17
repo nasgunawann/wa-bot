@@ -10,7 +10,7 @@ export function initSettingsForm() {
         const inputs = [
             'cfgBotName', 'cfgPrefix', 'cfgOwners', 'cfgAutoRead', 
             'cfgRespondSelf', 'cfgAutoAi', 'cfgSholat', 'cfgSholatTarget', 
-            'cfgWelcome', 'cfgGoodbye'
+            'cfgSholatTargetType', 'cfgWelcome', 'cfgGoodbye'
         ];
 
         inputs.forEach(id => {
@@ -19,6 +19,19 @@ export function initSettingsForm() {
             const eventType = el.type === 'checkbox' ? 'change' : 'input';
             el.addEventListener(eventType, checkChanges);
         });
+
+        const sholatTypeSelect = document.getElementById('cfgSholatTargetType');
+        if (sholatTypeSelect) {
+            sholatTypeSelect.addEventListener('change', () => {
+                const hint = document.getElementById('cfgSholatTargetHint');
+                if (sholatTypeSelect.value === 'group') {
+                    hint.innerHTML = "Masukkan ID grup lengkap (contoh: <code>120363234567890@g.us</code>).";
+                } else {
+                    hint.innerHTML = "Untuk DM masukkan nomor lengkap tanpa \"+\" (contoh: <code>6281234567890</code>).";
+                }
+                checkChanges();
+            });
+        }
     });
 
     const saveBtn = document.getElementById('btnSaveConfig');
@@ -53,8 +66,18 @@ async function loadFullConfig() {
         
         // Dynamic sholat target JID formatting
         const target = data.sholatReminderTarget || '';
-        const cleanSholatTarget = target.endsWith('@s.whatsapp.net') ? target.split('@')[0] : target;
+        const isGroup = target.endsWith('@g.us');
+        const cleanSholatTarget = target.split('@')[0];
+        
+        document.getElementById('cfgSholatTargetType').value = isGroup ? 'group' : 'dm';
         document.getElementById('cfgSholatTarget').value = cleanSholatTarget;
+        
+        const sholatHint = document.getElementById('cfgSholatTargetHint');
+        if (sholatHint) {
+            sholatHint.innerHTML = isGroup 
+                ? "Masukkan ID grup lengkap (contoh: <code>120363234567890@g.us</code>)." 
+                : "Untuk DM masukkan nomor lengkap tanpa \"+\" (contoh: <code>6281234567890</code>).";
+        }
         
         document.getElementById('cfgWelcome').value = data.welcomeMessage || '';
         document.getElementById('cfgGoodbye').value = data.goodbyeMessage || '';
@@ -96,19 +119,18 @@ function checkChanges() {
     const respondToSelf = document.getElementById('cfgRespondSelf').checked;
     const autoAiResponse = document.getElementById('cfgAutoAi').checked;
     const sholatReminderEnabled = document.getElementById('cfgSholat').checked;
-    const sholatReminderTarget = document.getElementById('cfgSholatTarget').value;
+    const sholatReminderTargetInput = document.getElementById('cfgSholatTarget').value;
+    const sholatTargetType = document.getElementById('cfgSholatTargetType').value;
     const welcomeMessage = document.getElementById('cfgWelcome').value;
     const goodbyeMessage = document.getElementById('cfgGoodbye').value;
 
-    // Process original owner JIDs for identical comparison
-    const ownersOriginal = originalConfig.owners ? originalConfig.owners.map(o => o.split('@')[0]).join(', ') : '';
-    
-    // Process original sholat target JID for identical comparison
-    const targetOriginal = originalConfig.sholatReminderTarget || '';
-    const sholatTargetOriginal = targetOriginal.endsWith('@s.whatsapp.net') ? targetOriginal.split('@')[0] : targetOriginal;
-
     const cleanOwnersInput = ownersInput.split(',').map(s => s.trim()).filter(Boolean).join(',');
-    const cleanOwnersOriginal = ownersOriginal.split(',').map(s => s.trim()).filter(Boolean).join(',');
+    const cleanOwnersOriginal = (originalConfig.owners || []).map(o => o.split('@')[0]).join(',');
+
+    let constructedSholatTarget = sholatReminderTargetInput.trim();
+    if (constructedSholatTarget && !constructedSholatTarget.includes('@')) {
+        constructedSholatTarget = constructedSholatTarget + (sholatTargetType === 'group' ? '@g.us' : '@s.whatsapp.net');
+    }
 
     const hasChanged = 
         botName !== (originalConfig.botName || '') ||
@@ -118,7 +140,7 @@ function checkChanges() {
         respondToSelf !== !!originalConfig.respondToSelf ||
         autoAiResponse !== !!originalConfig.autoAiResponse ||
         sholatReminderEnabled !== !!originalConfig.sholatReminderEnabled ||
-        sholatReminderTarget.trim() !== sholatTargetOriginal.trim() ||
+        constructedSholatTarget !== (originalConfig.sholatReminderTarget || '') ||
         welcomeMessage !== (originalConfig.welcomeMessage || '') ||
         goodbyeMessage !== (originalConfig.goodbyeMessage || '');
 
@@ -154,9 +176,15 @@ async function saveFullConfig(event) {
     const respondToSelf = document.getElementById('cfgRespondSelf').checked;
     const autoAiResponse = document.getElementById('cfgAutoAi').checked;
     const sholatReminderEnabled = document.getElementById('cfgSholat').checked;
-    const sholatReminderTarget = document.getElementById('cfgSholatTarget').value;
+    const sholatReminderTargetInput = document.getElementById('cfgSholatTarget').value;
+    const sholatTargetType = document.getElementById('cfgSholatTargetType').value;
     const welcomeMessage = document.getElementById('cfgWelcome').value;
     const goodbyeMessage = document.getElementById('cfgGoodbye').value;
+
+    let sholatReminderTarget = sholatReminderTargetInput.trim();
+    if (sholatReminderTarget && !sholatReminderTarget.includes('@')) {
+        sholatReminderTarget = sholatReminderTarget + (sholatTargetType === 'group' ? '@g.us' : '@s.whatsapp.net');
+    }
 
     try {
         const res = await fetch('/api/config', {

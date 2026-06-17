@@ -41,8 +41,9 @@ function renderSholatWidget(data) {
  */
 function highlightNextPrayer(schedule) {
     const now = new Date();
-    const currentHours = now.getHours();
-    const currentMinutes = now.getMinutes();
+    const dateInJakarta = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+    const currentHours = dateInJakarta.getHours();
+    const currentMinutes = dateInJakarta.getMinutes();
     const currentAbsoluteMinutes = currentHours * 60 + currentMinutes;
 
     const prayerIds = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
