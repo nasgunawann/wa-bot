@@ -1,5 +1,6 @@
 services:
   wa-bot:
+    build: .
     image: wa-bot
     container_name: wa-bot
     ports:
