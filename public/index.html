@@ -73,43 +73,60 @@
             <h1
               class="text-2xl font-bold bg-gradient-to-r from-slate-50 via-slate-100 to-indigo-300 bg-clip-text text-transparent tracking-tight"
             >
-              Nanasgunung Creative Bot
+              Nanasgunung Creative Bot Dashboard
             </h1>
-            <p class="text-sm text-slate-400 mt-1">
-              Dashboard
-            </p>
+            <p class="text-sm text-slate-400 mt-1">Dashboard</p>
           </div>
 
           <!-- Status & Clock Container -->
           <div class="flex flex-wrap items-center gap-3">
-              <!-- Bot Profile Card (Visible when Connected) -->
-              <div id="botProfileCard" class="hidden items-center gap-2.5 bg-slate-950/60 border border-slate-800/80 px-3.5 py-1.5 rounded-full text-xs shadow-inner select-none transition-all duration-300">
-                <img id="botAvatar" src="" alt="Avatar" class="w-6 h-6 rounded-full border border-indigo-500/30 object-cover bg-slate-800" />
-                <div class="flex flex-col">
-                  <span id="botNameText" class="font-bold text-slate-200 leading-tight tracking-tight">Bot</span>
-                  <span id="botJidText" class="text-[9px] text-slate-500 font-mono leading-tight">--</span>
-                </div>
-              </div>
-
-              <!-- Real-Time Clock -->
-              <div id="realtimeClock" class="bg-slate-950/60 border border-slate-800 px-4 py-2 rounded-full text-xs font-mono text-slate-300 select-none flex items-center gap-1.5 shadow-inner">
-                  <span>🕒</span>
-                  <span id="clockTime" class="font-bold">00:00:00</span>
-              </div>
-
-              <!-- Status Badge -->
-              <div
-                id="statusBadge"
-                class="flex items-center gap-2 bg-slate-950/60 border border-slate-800 px-4 py-2 rounded-full text-xs font-semibold select-none"
-              >
+            <!-- Bot Profile Card (Visible when Connected) -->
+            <div
+              id="botProfileCard"
+              class="hidden items-center gap-2.5 bg-slate-950/60 border border-slate-800/80 px-3.5 py-1.5 rounded-full text-xs shadow-inner select-none transition-all duration-300"
+            >
+              <img
+                id="botAvatar"
+                src=""
+                alt="Avatar"
+                class="w-6 h-6 rounded-full border border-indigo-500/30 object-cover bg-slate-800"
+              />
+              <div class="flex flex-col">
                 <span
-                  class="w-2.5 h-2.5 rounded-full bg-slate-500 shadow-[0_0_10px_rgba(148,163,184,0.5)] animate-pulse"
-                  id="statusDot"
-                ></span>
-                <span id="statusText" class="text-slate-400"
-                  >Connecting Sesi...</span
+                  id="botNameText"
+                  class="font-bold text-slate-200 leading-tight tracking-tight"
+                  >Bot</span
+                >
+                <span
+                  id="botJidText"
+                  class="text-[9px] text-slate-500 font-mono leading-tight"
+                  >--</span
                 >
               </div>
+            </div>
+
+            <!-- Real-Time Clock -->
+            <div
+              id="realtimeClock"
+              class="bg-slate-950/60 border border-slate-800 px-4 py-2 rounded-full text-xs font-mono text-slate-300 select-none flex items-center gap-1.5 shadow-inner"
+            >
+              <span>🕒</span>
+              <span id="clockTime" class="font-bold">00:00:00</span>
+            </div>
+
+            <!-- Status Badge -->
+            <div
+              id="statusBadge"
+              class="flex items-center gap-2 bg-slate-950/60 border border-slate-800 px-4 py-2 rounded-full text-xs font-semibold select-none"
+            >
+              <span
+                class="w-2.5 h-2.5 rounded-full bg-slate-500 shadow-[0_0_10px_rgba(148,163,184,0.5)] animate-pulse"
+                id="statusDot"
+              ></span>
+              <span id="statusText" class="text-slate-400"
+                >Connecting Sesi...</span
+              >
+            </div>
           </div>
         </header>
 
@@ -312,8 +329,11 @@
                           required
                         />
                       </div>
-                      <span class="text-[11px] text-slate-500" id="scheduleTargetHint"
-                        >Untuk DM masukkan nomor lengkap tanpa "+" (contoh: 6281234567890).</span
+                      <span
+                        class="text-[11px] text-slate-500"
+                        id="scheduleTargetHint"
+                        >Untuk DM masukkan nomor lengkap tanpa "+" (contoh:
+                        6281234567890).</span
                       >
                     </div>
                     <div class="flex flex-col gap-2">
@@ -509,8 +529,11 @@
                         placeholder="6281234567890"
                       />
                     </div>
-                    <span class="text-[11px] text-slate-500" id="cfgSholatTargetHint"
-                      >Untuk DM masukkan nomor lengkap tanpa "+" (contoh: 6281234567890).</span
+                    <span
+                      class="text-[11px] text-slate-500"
+                      id="cfgSholatTargetHint"
+                      >Untuk DM masukkan nomor lengkap tanpa "+" (contoh:
+                      6281234567890).</span
                     >
                   </div>
 
@@ -696,8 +719,16 @@
                   >💡 Tugas Latar Belakang Aktif:</span
                 >
                 <div class="flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-slate-500" id="statusDotSholat"></span>
-                  <span>Medan Prayer Alerts (WIB) — <i id="statusTextSholat" class="not-italic font-semibold">Memuat...</i></span>
+                  <span
+                    class="w-1.5 h-1.5 rounded-full bg-slate-500"
+                    id="statusDotSholat"
+                  ></span>
+                  <span
+                    >Medan Prayer Alerts (WIB) —
+                    <i id="statusTextSholat" class="not-italic font-semibold"
+                      >Memuat...</i
+                    ></span
+                  >
                 </div>
                 <div class="flex items-center gap-1.5">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -717,7 +748,10 @@
     </div>
 
     <!-- Toast Notifications Container -->
-    <div id="toastContainer" class="fixed top-5 right-5 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+    <div
+      id="toastContainer"
+      class="fixed top-5 right-5 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none"
+    ></div>
 
     <!-- Active ES Modules Script Entrypoint -->
     <script type="module" src="app.js"></script>
