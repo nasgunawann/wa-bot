@@ -3,6 +3,7 @@ import config from './config.js';
 import { processCommand } from './modules/commands.js';
 import { processAutoAssistant } from './modules/assistant.js';
 import { processGroupParticipants } from './modules/welcome.js';
+import { ValidMessage } from './modules/commands/types.js';
 
 /**
  * Extract text from WhatsApp message info safely
@@ -33,13 +34,13 @@ export async function handleMessage(sock: WASocket, m: { messages: proto.IWebMes
         
         for (const msg of messages) {
             // Ignore messages without actual content or from status broadcasts
-            if (!msg.message || msg.key.remoteJid === 'status@broadcast') continue;
+            if (!msg.key || !msg.message || msg.key.remoteJid === 'status@broadcast') continue;
             
             const remoteJid = msg.key.remoteJid;
             if (!remoteJid) continue;
             
             const isGroup = remoteJid.endsWith('@g.us');
-            const isMe = msg.key.fromMe;
+            const isMe = !!msg.key.fromMe;
             
             // Check self-response settings
             if (isMe && !config.respondToSelf) continue;
@@ -67,7 +68,7 @@ export async function handleMessage(sock: WASocket, m: { messages: proto.IWebMes
             // 2. Chat berada di DM pribadi ATAU berupa command grup ATAU bot di-tag di grup
             if (config.autoRead && !isMe) {
                 if (!isGroup || isCommand || isMentioned) {
-                    await sock.readMessages([msg.key]);
+                    await sock.readMessages([msg.key as proto.IMessageKey]);
                 }
             }
             
@@ -93,9 +94,9 @@ export async function handleMessage(sock: WASocket, m: { messages: proto.IWebMes
                 if (!isGroup && !isMe && !config.autoAiResponse) {
                     const lowerText = text.toLowerCase();
                     if (lowerText === 'halo' || lowerText === 'hai' || lowerText === 'hi') {
-                        await sock.sendMessage(remoteJid, { text: `Halo! Saya adalah *${config.botName}*. Ketik \`${config.prefix}help\` untuk melihat daftar perintah.` }, { quoted: msg });
+                        await sock.sendMessage(remoteJid, { text: `Halo! Saya adalah *${config.botName}*. Ketik \`${config.prefix}help\` untuk melihat daftar perintah.` }, { quoted: msg as ValidMessage });
                     } else if (lowerText === 'p' || lowerText === 'assalamualaikum') {
-                        await sock.sendMessage(remoteJid, { text: 'Waalaikumsalam / Halo! Silakan hubungi saya atau gunakan command bot.' }, { quoted: msg });
+                        await sock.sendMessage(remoteJid, { text: 'Waalaikumsalam / Halo! Silakan hubungi saya atau gunakan command bot.' }, { quoted: msg as ValidMessage });
                     }
                 }
             }

@@ -1,6 +1,7 @@
 import { WASocket, proto } from '@whiskeysockets/baileys';
 import { askGemini } from '../ai.js';
 import config from '../config.js';
+import { ValidMessage } from './commands/types.js';
 
 /**
  * Handle automatic AI responses (Auto Assistant)
@@ -66,7 +67,7 @@ export async function processAutoAssistant(
             const aiReply = await askGemini(cleanPrompt, remoteJid);
             
             // Send response back with quoted reference
-            await sock.sendMessage(remoteJid, { text: aiReply }, { quoted: msg });
+            await sock.sendMessage(remoteJid, { text: aiReply }, { quoted: msg as ValidMessage });
         } catch (error) {
             console.error('❌ Gagal merespon obrolan otomatis asisten AI:', error);
         }

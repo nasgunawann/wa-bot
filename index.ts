@@ -371,7 +371,10 @@ async function startBot() {
 
   // 7. Handle group participants update (Welcome / Goodbye)
   sock.ev.on("group-participants.update", async (update) => {
-    await handleGroupParticipants(sock, update);
+    await handleGroupParticipants(sock, {
+      ...update,
+      participants: update.participants.map((p: any) => typeof p === 'string' ? p : p.id)
+    });
   });
 }
 
